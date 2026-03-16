@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "SciCalc/sci_calc.hpp"
+#include "../include/SciCalc/sci_calc.hpp"
 
 int main(void) {
     sci_calc::SciCalc calculator;

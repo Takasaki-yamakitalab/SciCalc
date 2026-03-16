@@ -5,6 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(ANDROID)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
+    set(CMAKE_ANDROID_STL_TYPE c++_static)
+endif()
+
 set(SRC
     src/sci_calc_ast.cpp
     src/sci_calc_csv.cpp
@@ -45,10 +50,18 @@ install(EXPORT ${PROJECT_NAME}Targets
     NAMESPACE ${PROJECT_NAME}::
     DESTINATION lib/cmake/${PROJECT_NAME}
 )
-file(WRITE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+
+include(CMakePackageConfigHelpers)
+file(WRITE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake.in
     "
+@PACKAGE_INIT@
 include(\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Targets.cmake)
     "
+)
+configure_package_config_file(
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake.in
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
 )
 install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/cmake/${PROJECT_NAME})
 
