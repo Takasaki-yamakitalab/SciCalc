@@ -3,7 +3,18 @@
 #include <algorithm>
 
 namespace sci_calc {
+    int SciCalc::change_optimizer(const std::string& opt) {
+        if (opt == "none" || opt == "None" || opt == "NONE") {
+            this->m_optimizer = 0;
+        }
+        if (opt == "default" || opt == "Default" || opt == "DEFAULT") {
+            this->m_optimizer = 1;
+        }
+        return this->m_optimizer;
+    }
+
     int SciCalc::optimize_node(NodePtr& node) {
+        if (this->m_optimizer == 0) return 0;
         if (node->type == ND_OPE) {
             if (node->children[0]->type != ND_NUM || node->children[1]->type != ND_NUM) return 0;
             // if all children of the operator node are numbers

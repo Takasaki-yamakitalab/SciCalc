@@ -29,11 +29,13 @@ namespace sci_calc {
         bool is_debug;
 
         // number of divisions in numerical integration
-        int m_integral_N = 1048576;     // 2^20
+        int m_integral_N = DEFAULT_INTEGRAL_N;
 
         // list of variables that are treated as "variables"
         // variables not registered in this list will be expanded to constants
         std::vector<int> m_var_id_stack;
+
+        uint32_t m_optimizer = 1;
 
     public:
         // sci_calc.cpp
@@ -45,6 +47,7 @@ namespace sci_calc {
         int init();
         std::string rm_spaces(const std::string& src);
         double calc(const std::string& formula);
+        int set_integral_N(int N = DEFAULT_INTEGRAL_N);
 
         // sci_calc_ast.cpp
         int is_bracket(char c);
@@ -58,6 +61,7 @@ namespace sci_calc {
         double evaluate_node(const NodePtr& node);
 
         // sci_calc_optimize.cpp
+        int change_optimizer(const std::string& opt = "default");
         int optimize_node(NodePtr& node);
 
         // sci_calc_mathfunc.cpp

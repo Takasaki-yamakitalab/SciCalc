@@ -54,4 +54,8 @@ namespace sci_calc {
         assign_memory("ans", ans);
         return ans;
     }
+
+    int SciCalc::set_integral_N(int N) {
+        return this->m_integral_N = N;
+    }
 }

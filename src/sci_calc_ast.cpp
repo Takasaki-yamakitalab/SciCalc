@@ -1,4 +1,4 @@
-#include "Scicalc/sci_calc.hpp"
+#include "SciCalc/sci_calc.hpp"
 #include <stdio.h>
 #include <cmath>
 

@@ -21,6 +21,7 @@ namespace sci_calc {
     };
 
     const char OP_LIST[OP_END][2] = { "+", "-", "*", "/", "^" };
+    constexpr int DEFAULT_INTEGRAL_N = 0x100000;
 
     struct Node {
         NODE_TYPE type = ND_NUM;
