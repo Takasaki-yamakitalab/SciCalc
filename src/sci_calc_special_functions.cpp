@@ -1,6 +1,10 @@
 #include "SciCalc/sci_calc.hpp"
 
 namespace sci_calc {
+    int SciCalc::set_integral_N(int N) {
+        return this->m_integral_N = N;
+    }
+
 	int SciCalc::set_special_func_list() {
 		// special functions
 		// sort by longest name first
@@ -118,13 +122,15 @@ namespace sci_calc {
 		if (children.size() != 3) return NAN;
 		int var_id = children[1]->id;
 		double x = evaluate_node(children[2]);
+        double eps = std::numeric_limits<double>::epsilon();
+        double h = std::sqrt(eps) * std::max(std::abs(x), 1.0);
 		double ans = 0.0;
 		double memory = m_memory[var_id].value;
-		m_memory[var_id].value = x + 1e-6;
+		m_memory[var_id].value = x + h;
 		ans = evaluate_node(children[0]);
-		m_memory[var_id].value = x - 1e-6;
+		m_memory[var_id].value = x - h;
 		ans -= evaluate_node(children[0]);
-		ans /= 2e-6;
+		ans /= 2 * h;
 		m_memory[var_id].value = memory;
 		return ans;
 	}

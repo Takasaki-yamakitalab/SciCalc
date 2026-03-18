@@ -47,6 +47,16 @@ namespace sci_calc {
 		return 0;
 	}
 
+    bool SciCalc::ends_with_math_func(const std::string& str) {
+        if (str.find("@") == std::string::npos) return false;
+        for (int i = 0; i < m_functions.size(); i++) {
+            if (str.rfind(m_functions[i].name) == str.size() - m_functions[i].name.size()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	int SciCalc::detect_func(const std::string& func) {
 		int id;
 		for (id = 0; id < m_functions.size(); id++) {

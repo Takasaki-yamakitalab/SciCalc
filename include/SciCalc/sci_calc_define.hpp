@@ -23,7 +23,18 @@ namespace sci_calc {
     const char OP_LIST[OP_END][2] = { "+", "-", "*", "/", "^" };
     constexpr int DEFAULT_INTEGRAL_N = 0x100000;
 
+    constexpr uint32_t OPTIMIZER_NONE = 0;
+    constexpr uint32_t OPTIMIZER_CONST_FOLDING = 1 << 0;
+    constexpr uint32_t OPTIMIZER_CONST_PROPAGATION = 1 << 1;
+    constexpr uint32_t OPTIMIZER_ALGEBRAIC_SIMPLIFICATION = 1 << 2;
+    constexpr uint32_t OPTIMIZER_COMBINE_LIKE_TERMS = 1 << 3;
+
+    constexpr uint32_t OPTIMIZER_ALL = 0xFFFFFFFF;
+
+    constexpr uint32_t OPTIMIZER_DEFAULT = OPTIMIZER_CONST_FOLDING + OPTIMIZER_CONST_PROPAGATION + OPTIMIZER_ALGEBRAIC_SIMPLIFICATION + OPTIMIZER_COMBINE_LIKE_TERMS;
+
     struct Node {
+        size_t hash;
         NODE_TYPE type = ND_NUM;
         int id = 0;
         double value = 0.0;

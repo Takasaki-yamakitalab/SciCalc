@@ -67,4 +67,11 @@ namespace sci_calc {
 		m_memory[get_memory_id(name)].value = val;
 		return val;
 	}
+
+    std::vector<Memory> SciCalc::get_all_memories() {
+        return this->m_memory;
+    }
+    void SciCalc::load_memories(const std::vector<Memory>& mems) {
+        this->m_memory = mems;
+    }
 }

@@ -27,35 +27,61 @@ namespace sci_calc {
     }
 
     std::string SciCalc::rm_spaces(const std::string& src) {
-        std::string buff(src.c_str());
+        std::string buff;
         std::string dst;
         for (size_t i = 0; i < src.size(); i++) {
-            if (buff[i] == '-') {
-                dst += "+(-1)*";
-                continue;
+            if (src[i] >= '!' && src[i] <= '~') {
+                buff.push_back(src[i]);
             }
-            if (buff[i] == '/') {
-                dst += "*1/";
-                continue;
-            }
-            if (buff[i] >= '!' && buff[i] <= '~') {
+        }
+        for (size_t i = 0; i < buff.size(); i++) {
+            if (buff[i] == '(' ||
+                buff[i] == '@' ||
+                buff[i] == '\\') {
+                if (dst.size() > 0 &&
+                    dst[dst.size() - 1] != '(' &&
+                    dst[dst.size() - 1] != '{' &&
+                    dst[dst.size() - 1] != '[' &&
+                    dst[dst.size() - 1] != '+' &&
+                    dst[dst.size() - 1] != '-' &&
+                    dst[dst.size() - 1] != '*' &&
+                    dst[dst.size() - 1] != '/' &&
+                    dst[dst.size() - 1] != '^' &&
+                    !ends_with_math_func(dst)) {
+                        dst += "*";
+                    }
                 dst.push_back(buff[i]);
+                continue;
             }
+            if (buff[i] == ')') {
+                dst.push_back(buff[i]);
+                if (i < src.size() - 1 &&
+                    buff[i + 1] != ')' &&
+                    buff[i + 1] != '}' &&
+                    buff[i + 1] != ']' &&
+                    buff[i + 1] != '+' &&
+                    buff[i + 1] != '-' &&
+                    buff[i + 1] != '*' &&
+                    buff[i + 1] != '/' &&
+                    buff[i + 1] != '^') {
+                        dst += "*";
+                    }
+                continue;
+            }
+            dst.push_back(buff[i]);
         }
         return dst;
     }
 
     double SciCalc::calc(const std::string& formula) {
         m_var_id_stack.clear();
-        std::string buff = rm_spaces(formula);
-        NodePtr node = parse(buff);
-        double ans = evaluate_node(node);
+        if (formula != this->formula_cash) {
+            std::string buff = rm_spaces(formula);
+            this->ast_cash = parse(buff);
+        }
+        double ans = evaluate_node(this->ast_cash);
         assign_memory("preans", get_memory("ans"));
         assign_memory("ans", ans);
         return ans;
-    }
-
-    int SciCalc::set_integral_N(int N) {
-        return this->m_integral_N = N;
     }
 }

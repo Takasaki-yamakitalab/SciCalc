@@ -3,18 +3,61 @@
 #include <algorithm>
 
 namespace sci_calc {
-    int SciCalc::change_optimizer(const std::string& opt) {
+    bool SciCalc::is_equal(const Node* a, const Node* b) {
+        if (a->hash != b->hash) return false;
+        if (a->type != b->type) return false;
+        if (a->id != b->id) return false;
+        if (a->value != b->value) return false;
+
+        if (a->children.size() != b->children.size()) return false;
+        for (size_t i = 0; i < a->children.size(); i++) {
+            if (!is_equal(a->children[i].get(), b->children[i].get())) return false;
+        }
+
+        return true;
+    }
+
+    uint32_t SciCalc::change_optimizer(const std::string& opt) {
         if (opt == "none" || opt == "None" || opt == "NONE") {
-            this->m_optimizer = 0;
+            this->m_optimizer = OPTIMIZER_NONE;
         }
         if (opt == "default" || opt == "Default" || opt == "DEFAULT") {
-            this->m_optimizer = 1;
+            this->m_optimizer = OPTIMIZER_DEFAULT;
+        }
+        if (opt == "all" || opt == "All" || opt == "ALL") {
+            this->m_optimizer = OPTIMIZER_ALL;
         }
         return this->m_optimizer;
     }
 
+    uint32_t SciCalc::add_optimizer(const std::string& opt) {
+        uint32_t o = OPTIMIZER_NONE;
+        if (opt == "constant folding" || opt == "Constant Folding" || opt == "cf" || opt == "CF" || opt == "CONSTANT FOLDING") {
+            o = OPTIMIZER_CONST_FOLDING;
+        }
+        if (opt == "constant propagation" || opt == "Constant Propagation" || opt == "cp" || opt == "CP" || opt == "CONSTANT PROPAGATION") {
+            o = OPTIMIZER_CONST_PROPAGATION;
+        }
+        if (opt == "algebraic simplification" || opt == "Algebraic Simplification" || opt == "as" || opt == "AS" || opt == "ALGEBRAIC SIMPLIFICATION") {
+            o = OPTIMIZER_ALGEBRAIC_SIMPLIFICATION;
+        }
+        if (opt == "combine like terms" || opt == "Combine Like Terms" || opt == "clt" || opt == "CLT" || opt == "COMBINE LIKE TERMS") {
+            o = OPTIMIZER_COMBINE_LIKE_TERMS;
+        }
+        this->m_optimizer |= o;
+        return o;
+    }
+
     int SciCalc::optimize_node(NodePtr& node) {
-        if (this->m_optimizer == 0) return 0;
+        if (this->m_optimizer == OPTIMIZER_NONE) return 0;
+        if (this->m_optimizer & OPTIMIZER_CONST_FOLDING) optimizer_const_folding(node);
+        if (this->m_optimizer & OPTIMIZER_CONST_PROPAGATION) optimizer_const_propagation(node);
+        if (this->m_optimizer & OPTIMIZER_ALGEBRAIC_SIMPLIFICATION) optimizer_algebraic_simplification(node);
+        if (this->m_optimizer & OPTIMIZER_COMBINE_LIKE_TERMS) optimizer_combine_like_terms(node);
+        return 0;
+    }
+
+    int SciCalc::optimizer_const_folding(NodePtr& node) {
         if (node->type == ND_OPE) {
             if (node->children[0]->type != ND_NUM || node->children[1]->type != ND_NUM) return 0;
             // if all children of the operator node are numbers
@@ -35,15 +78,6 @@ namespace sci_calc {
             double x = node->children[0]->value;
             node->type = ND_NUM;
             node->value = m_functions[node->id].calc(x);
-            node->children.clear();
-            return 0;
-        }
-        if (node->type == ND_VAR) {
-            for (int i = 0; i < m_var_id_stack.size(); i++) {
-                if (m_var_id_stack[i] == node->id) return 0;
-            }
-            node->type = ND_NUM;
-            node->value = m_memory[node->id].value;
             node->children.clear();
             return 0;
         }
@@ -117,6 +151,110 @@ namespace sci_calc {
                 return 0;
             }
         }
+        return 0;
+    }
+
+    int SciCalc::optimizer_const_propagation(NodePtr& node) {
+        if (node->type != ND_VAR) return 0;
+
+        for (int i = 0; i < m_var_id_stack.size(); i++) {
+            if (m_var_id_stack[i] == node->id) return 0;
+        }
+        node->type = ND_NUM;
+        node->value = m_memory[node->id].value;
+        node->children.clear();
+        return 0;
+    }
+
+    int SciCalc::optimizer_algebraic_simplification(NodePtr& node) {
+        if (node->type != ND_OPE) return 0;
+
+        if (node->id == OP_ADD) {
+            if (node->children[0]->type == ND_NUM && node->children[0]->value == 0) {
+                node = std::move(node->children[1]);
+                return 0;
+            }
+            if (node->children[1]->type == ND_NUM && node->children[1]->value == 0) {
+                node = std::move(node->children[0]);
+                return 0;
+            }
+        }
+        if (node->id == OP_SUB) {
+            if (node->children[1]->type == ND_NUM && node->children[1]->value == 0) {
+                node = std::move(node->children[0]);
+                return 0;
+            }
+        }
+        if (node->id == OP_MUL) {
+            if (node->children[0]->type == ND_NUM && node->children[0]->value == 0 ||
+                node->children[1]->type == ND_NUM && node->children[1]->value == 0) {
+                node->type = ND_NUM;
+                node->id = 0;
+                node->value = 0;
+                node->children.clear();
+                return 0;
+            }
+            if (node->children[0]->type == ND_NUM && node->children[0]->value == 1) {
+                node = std::move(node->children[1]);
+                return 0;
+            }
+            if (node->children[1]->type == ND_NUM && node->children[1]->value == 1) {
+                node = std::move(node->children[0]);
+                return 0;
+            }
+        }
+        if (node->id == OP_DIV) {
+            if (node->children[0]->type == ND_NUM && node->children[0]->value == 0) {
+                node->type = ND_NUM;
+                node->id = 0;
+                node->value = 0;
+                node->children.clear();
+                return 0;
+            }
+            if (node->children[1]->type == ND_NUM && node->children[1]->value == 1) {
+                node = std::move(node->children[0]);
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    int SciCalc::optimizer_combine_like_terms(NodePtr& node) {
+        if (node->type != ND_OPE) return 0;
+
+        if (node->id == OP_ADD || node->id == OP_MUL) {
+            if (node->children[0]->hash > node->children[1]->hash) {
+                std::swap(node->children[0], node->children[1]);
+                return 0;
+            }
+        }
+
+        if (!is_equal(node->children[0].get(), node->children[1].get())) return 0;
+
+        if (node->id == OP_ADD) {
+            node->id = OP_MUL;
+            node->children[0]->type = ND_NUM;
+            node->children[0]->id = 0;
+            node->children[0]->value = 2;
+            node->children[0]->children.clear();
+            return 0;
+        }
+        if (node->id == OP_SUB) {
+            node->type = ND_NUM;
+            node->id = 0;
+            node->value = 0;
+            node->children.clear();
+            return 0;
+        }
+        if (node->id == OP_MUL) {
+            node->id = OP_POW;
+            node->children[1]->type = ND_NUM;
+            node->children[1]->id = 0;
+            node->children[1]->value = 2;
+            node->children[1]->children.clear();
+            return 0;
+        }
+
         return 0;
     }
 }

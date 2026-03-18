@@ -41,13 +41,13 @@ namespace sci_calc {
         if (formula.find(ope) == std::string::npos) return std::string();
         int brackets = 0;
         size_t index = 0;
-        for (index = 0; index < formula.size(); index++) {
-            if (index == formula.size() - 1) {
-                return std::string();
-            }
+        for (index = formula.size() - 1; index >= 0; index--) {
             if (brackets == 0 && formula[index] == ope)
                 break;
-            brackets += is_bracket(formula[index]);
+            brackets -= is_bracket(formula[index]);
+            if (index == 0) {
+                return std::string();
+            }
         }
         std::string right(formula.substr(index + 1));
         formula.erase(index);
@@ -59,18 +59,35 @@ namespace sci_calc {
         if (formula.find(ope) == std::string::npos) return std::string();
         int brackets = 0;
         size_t index = 0;
-
-        for (index = 0; index < formula.size(); index++) {
-            if (index == formula.size() - 1) {
-                return std::string();
-            }
+        for (index = formula.size() - 1; index >= 0; index--) {
             if (brackets == 0 && strncmp(formula.c_str() + index, ope, strlen(ope)) == 0)
                 break;
-            brackets += is_bracket(formula[index]);
+            brackets -= is_bracket(formula[index]);
+            if (index == 0) {
+                return std::string();
+            }
         }
         std::string right(formula.substr(index + strlen(ope)));
         formula.erase(index);
         return right;
+    }
+
+    size_t SciCalc::node_hash(const Node* node) {
+        size_t h = std::hash<int>()(node->type);
+
+        h ^= std::hash<int>()(node->id) + 0x9e3779b9 + (h << 6) + (h >> 2);
+
+        uint64_t bits;
+        memcpy(&bits, &node->value, sizeof(double));
+        h ^= std::hash<uint64_t>()(bits) + 0x9e3779b9 + (h << 6) + (h >> 2);
+
+        h ^= node->children.size() + 0x9e3779b9 + (h << 6) + (h >> 2);
+
+        for (auto& c : node->children) {
+            h ^= c->hash + 0x9e3779b9 + (h << 6) + (h >> 2);
+        }
+
+        return h;
     }
 
     NodePtr SciCalc::parse(std::string& left) {
@@ -80,6 +97,7 @@ namespace sci_calc {
         std::string right;
 
         if (left.size() == 0) {
+            node->hash = node_hash(node.get());
             return node;
         }
 
@@ -89,6 +107,7 @@ namespace sci_calc {
             node->type = ND_ASSIGN;
             node->children.push_back(parse(left));
             node->children.push_back(parse(right));
+            node->hash = node_hash(node.get());
             return node;
         }
         if ((right = split_by_ope(left, "=:")).size() != 0) {
@@ -96,6 +115,7 @@ namespace sci_calc {
             node->type = ND_ASSIGN;
             node->children.push_back(parse(right));
             node->children.push_back(parse(left));
+            node->hash = node_hash(node.get());
             return node;
         }
 
@@ -108,6 +128,7 @@ namespace sci_calc {
             node->children.push_back(parse(left));
             node->children.push_back(parse(right));
             optimize_node(node);
+            node->hash = node_hash(node.get());
             return node;
         }
 
@@ -116,12 +137,14 @@ namespace sci_calc {
         case '5': case '6': case '7': case '8': case '9':
             parse_numbers(left, node);
             optimize_node(node);
+            node->hash = node_hash(node.get());
             return node;
             break;
         case '\\':
             // special functions
             parse_special_func_args(left, node);
             optimize_node(node);
+            node->hash = node_hash(node.get());
             return node;
             break;
         case '@':
@@ -131,6 +154,7 @@ namespace sci_calc {
             rm_func_name(left);
             node->children.push_back(parse(left));
             optimize_node(node);
+            node->hash = node_hash(node.get());
             return node;
             break;
         default:
@@ -141,6 +165,7 @@ namespace sci_calc {
         node->type = ND_VAR;
         node->id = get_memory_id(left);
         optimize_node(node);
+        node->hash = node_hash(node.get());
         return node;
     }
 
