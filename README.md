@@ -19,7 +19,7 @@
 
 # Installation
 
-MSVCの場合
+### MSVCの場合
 ```
 mkdir build
 cd build
@@ -28,13 +28,33 @@ cmake --build . --config Release
 cmake --install .
 ```
 
-GNUCの場合
+### GNUCの場合
 ```
 mkdir build
 cd build
 cmake ..
 cmake --build .
 cmake --install .
+```
+
+### Androidの場合
+ABIごとにビルドディレクトリ・インストール先を分けることを推奨します。
+
+ここでは
+
+- ABI：x86
+- Buildディレクトリ：./build_x86
+- Install先：/usr/local/android/x86
+- NDKのパス：~/Android/Sdk/ndk/25.0.0/
+- android-24 を使用
+
+として進めますが、ご自身の環境に合わせてください。
+```
+mkdir build_x86
+cd build_x86
+cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=~/Android/Sdk/ndk/25.0.0/build/cmake/android.toolchain.cmake -DANDROID_ABI=x86 -DANDROID_PLATFORM=android-24 -DCMAKE_PREFIX_PATH=/usr/local/android/x86
+cmake --build .
+cmake --install . --prefix /usr/local/android/x86
 ```
 
 # Description
@@ -65,8 +85,8 @@ a2b3c+4
 
 以下の変数名についても任意の値を代入することは可能ですが、計算が完了すると上書きされてしまうため推奨しません。
 
-- `ans`：1つ前の計算結果が代入されます。初期値は0です。
-- `preans`：2つ前の計算結果が代入されます。初期値は0です。
+- `ans`：1つ前の計算結果が格納されます。初期値は0です。
+- `preans`：2つ前の計算結果が格納されます。初期値は0です。
 
 また、`pi`や`e`などには初期値（それぞれ円周率とネイピア数）が設定されていますが、任意の値を代入して使用することも可能です。
 たとえば
@@ -206,12 +226,18 @@ y
 ### Node optimization
 
 SciCalcでは、入力された数式から抽象構文木（AST）を生成し、ASTを再帰的に評価することで計算を行います。
-ここで、ASTの生成と同時に最適化を行うことで、ノード数を削減しています。
+ASTの評価を再帰的に行う理由は、特殊関数（とくに総和や総乗、数値積分）のネストを許容する仕様上、スタック命令列への変換が~~すごく面倒~~困難であったためです。
+
+ただし再帰処理では、ASTが深いと評価関数の呼び出しのオーバーヘッドが問題となる可能性があります。
+そこで、ASTの生成と同時に最適化を行うことでノード数を削減し、オーバーヘッドの問題を解消しています。
 
 SciCalcが行う最適化処理は以下の通りです。
 
 - Constant Folding (CF)
-    - `1+2`や`@sin1`のような式を事前に計算し、その計算結果を定数ノードとして保持する
+    - 定数式を事前に計算し、その計算結果を定数ノードとして保持する
+    - `1+2`→`3`
+    - `@sin1`→`0.84147...`
+    - `\sum{2}{x}{1}{10}`→`20`　など
 - Constant Propagation (CP)
     - 式中で値が変化しない変数を定数ノードに置き換える
 - Algebraic Simplification (AS)
@@ -223,3 +249,5 @@ SciCalcが行う最適化処理は以下の通りです。
     - `A*A`→`A^2`
 
 これらの使用/不使用はフラグによって管理されており、個別にON/OFFが可能です。
+なお、標準で全ての最適化処理が有効になっています。
+このため、多くの数式（代入演算子や特殊関数を用いない式）では、（CFおよびCPによって）最終的なノード数が1になります。
