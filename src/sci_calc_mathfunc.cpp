@@ -30,6 +30,7 @@ namespace sci_calc {
 		this->m_functions.emplace_back(
 			"",
 			[](double x) {
+                (void)x;
 				fprintf(stderr, "[ERROR] Undefined function name.\n");
 				return NAN;
 			});

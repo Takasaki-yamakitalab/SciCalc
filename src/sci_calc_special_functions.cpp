@@ -19,6 +19,7 @@ namespace sci_calc {
 
 		// error
 		m_special_functions.emplace_back("", 4, [](const std::vector<NodePtr>& children) {
+            (void)children;
 			fprintf(stderr, "[ERROR] Undefined function name.\n");
 			return NAN;
 			});

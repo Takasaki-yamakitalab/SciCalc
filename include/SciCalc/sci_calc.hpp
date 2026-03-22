@@ -89,7 +89,7 @@ namespace sci_calc {
         int set_memory();
         int save_memory();
         int reset_memory();
-        size_t get_memory_id(const std::string& name);
+        int get_memory_id(const std::string& name);
         double get_memory(const std::string& name);
         double assign_memory(const std::string& name, double val);
         void load_memories(const std::vector<Memory>& mems);

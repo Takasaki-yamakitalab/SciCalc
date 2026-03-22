@@ -49,7 +49,7 @@ namespace sci_calc {
 		return 0;
 	}
 
-	size_t SciCalc::get_memory_id(const std::string& name) {
+	int SciCalc::get_memory_id(const std::string& name) {
 		int id = 0;
 		for (id = 0; id < m_memory.size(); id++) {
 			if (m_memory[id].name == name) {
