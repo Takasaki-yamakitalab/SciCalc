@@ -76,6 +76,7 @@ namespace sci_calc {
     double SciCalc::calc(const std::string& formula) {
         m_var_id_stack.clear();
         if (formula != this->formula_cash) {
+            this->formula_cash = formula;
             std::string buff = rm_spaces(formula);
             this->ast_cash = parse(buff);
         }
