@@ -16,18 +16,20 @@ namespace sci_calc {
             std::vector<std::vector<NodePtr>> lists;
             for (size_t i = 0; i < node->children.size(); i++) {
                 expand(node->children[i]);
+                std::vector<NodePtr> list;
                 if (node->children[i]->type != ND_OPE || node->children[i]->type != OP_ADD) {
-                    lists.push_back({ std::make_unique<Node>(*node->children[i]) });
+                    list.push_back(std::make_unique<Node>(*node->children[i].get()));
+                    lists.push_back(std::move(list));
                     continue;
                 }
-                std::vector<NodePtr> list;
                 for (size_t j = 0; j < node->children[i]->children.size(); j++) {
-                    list.push_back(std::make_unique<Node>(*node->children[i]->children[j]));
+                    list.push_back(std::make_unique<Node>(*node->children[i]->children[j].get()));
                 }
                 lists.push_back(std::move(list));
             }
 
-            std::vector<NodePtr> result = { std::make_unique<Node>() };
+            std::vector<NodePtr> result;
+            result.push_back(std::make_unique<Node>());
             result[0]->type = ND_NUM;
             result[0]->value = 1.0;
             result[0]->hash = node_hash(result[0].get());
@@ -38,8 +40,8 @@ namespace sci_calc {
                         NodePtr temp = std::make_unique<Node>();
                         temp->type = ND_OPE;
                         temp->id = OP_MUL;
-                        temp->children.push_back(std::make_unique<Node>(*result[k]));
-                        temp->children.push_back(std::make_unique<Node>(*lists[i][j]));
+                        temp->children.push_back(std::make_unique<Node>(*result[k].get()));
+                        temp->children.push_back(std::make_unique<Node>(*lists[i][j].get()));
                         temp->hash = node_hash(temp.get());
                         next.push_back(std::move(temp));
                     }

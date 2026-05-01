@@ -93,7 +93,7 @@ namespace sci_calc {
             std::string buff = rm_spaces(formula);
             this->ast_cash = parse(buff);
         }
-        NodePtr ans = std::make_unique<Node>(*this->ast_cash);
+        NodePtr ans = std::make_unique<Node>(*this->ast_cash.get());
         expand(ans);
         return to_string(ans);
     }
