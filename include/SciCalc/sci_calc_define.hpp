@@ -40,11 +40,14 @@ namespace sci_calc {
         double value = 0.0;
         std::vector<std::unique_ptr<Node>> children;
         Node() {}
-        Node(const Node& other) : hash(other.hash), type(other.type), value(other.value) {
+        Node(const Node& other) : hash(other.hash), type(other.type), id(other.id), value(other.value) {
             for (size_t i = 0; i < other.children.size(); i++) {
                 children.push_back(std::make_unique<Node>(*other.children[i]));
             }
         }
+        ~Node() noexcept {}
+        Node(Node&&) noexcept = default;
+        Node& operator=(Node&&) noexcept = default;
     };
     using NodePtr = std::unique_ptr<Node>;
 
