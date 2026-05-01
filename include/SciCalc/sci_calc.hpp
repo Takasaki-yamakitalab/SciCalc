@@ -109,6 +109,12 @@ namespace sci_calc {
         double evaluate_perm_node(const std::vector<NodePtr>& children);
         double evaluate_comb_node(const std::vector<NodePtr>& children);
         double evaluate_log_node(const std::vector<NodePtr>& children);
+
+        // sci_calc_expand.cpp
+        int expand(NodePtr& node);
+        int flatten_add(NodePtr& node);
+        int flatten_mul(NodePtr& node);
+        int fold_add(NodePtr& node);
     };
 }
 #endif

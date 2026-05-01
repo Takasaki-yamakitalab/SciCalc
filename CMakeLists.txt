@@ -17,6 +17,7 @@ set(SRC
     src/sci_calc_memory.cpp
     src/sci_calc_optimize.cpp
     src/sci_calc_special_functions.cpp
+    src/sci_calc_expand.cpp
     src/sci_calc.cpp)
 
 if(MSVC)

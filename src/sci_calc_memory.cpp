@@ -23,6 +23,9 @@ namespace sci_calc {
 		return 0;
 	}
 	int SciCalc::save_memory() {
+#ifdef __ANDROID__
+        return 0;
+#endif
 		std::vector<std::vector<std::string>> dat;
 		for (auto& mem : m_memory) {
 			dat.push_back({ mem.name, std::to_string(mem.value) });
