@@ -85,4 +85,16 @@ namespace sci_calc {
         assign_memory("ans", ans);
         return ans;
     }
+
+    std::string SciCalc::expand(const std::string& formula) {
+        m_var_id_stack.clear();
+        if (formula != this->formula_cash) {
+            this->formula_cash = formula;
+            std::string buff = rm_spaces(formula);
+            this->ast_cash = parse(buff);
+        }
+        NodePtr ans = std::make_unique<Node>(*this->ast_cash);
+        expand(ans);
+        return to_string(ans);
+    }
 }

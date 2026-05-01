@@ -50,6 +50,7 @@ namespace sci_calc {
         int init();
         std::string rm_spaces(const std::string& src);
         double calc(const std::string& formula);
+        std::string expand(const std::string& formula);
 
 
         // sci_calc_ast.cpp
@@ -115,6 +116,11 @@ namespace sci_calc {
         int flatten_add(NodePtr& node);
         int flatten_mul(NodePtr& node);
         int fold_add(NodePtr& node);
+
+        // sci_calc_to_string.cpp
+        std::string to_string(const NodePtr& node);
+        std::string number_to_string(const NodePtr& node);
+        std::string special_func_to_string(const NodePtr& node);
     };
 }
 #endif
