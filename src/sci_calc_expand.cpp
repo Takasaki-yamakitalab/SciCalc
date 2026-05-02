@@ -4,6 +4,12 @@
 namespace sci_calc {
     static int sg_stat = 0;
     int SciCalc::expand(NodePtr& node, size_t depth) {
+        if (node->type == ND_MATH_FUNC || node->type == ND_SPECIAL_FUNC) {
+            for (auto& arg: node->children) {
+                expand(arg, depth);
+            }
+            return 0;
+        }
         if (node->type != ND_OPE) return 0;
         // std::cout << "DEBUG: expand [" << depth << "] " << to_string(node) << std::endl;
 

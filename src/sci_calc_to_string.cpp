@@ -56,7 +56,12 @@ namespace sci_calc {
 
     std::string SciCalc::special_func_to_string(const NodePtr& node) {
         if (!node) return "";
-        return "";  // TODO
+        std::string ret = "";
+        ret += m_special_functions[node->id].name;
+        for (auto& arg: node->children) {
+            ret += "{" + to_string(arg) + "}";
+        }
+        return ret;
     }
 
     bool SciCalc::need_paren(const NodePtr& node, const NodePtr& child) {
