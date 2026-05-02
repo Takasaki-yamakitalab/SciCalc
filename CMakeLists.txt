@@ -19,6 +19,7 @@ set(SRC
     src/sci_calc_special_functions.cpp
     src/sci_calc_expand.cpp
     src/sci_calc_to_string.cpp
+    src/sci_calc_sort.cpp
     src/sci_calc.cpp)
 
 if(MSVC)
@@ -69,4 +70,5 @@ install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/
 
 if(NOT ANDROID)
     add_subdirectory(example)
+    add_subdirectory(example2)
 endif()

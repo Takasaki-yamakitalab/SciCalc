@@ -74,6 +74,11 @@ namespace sci_calc {
         int optimizer_const_propagation(NodePtr& node);
         int optimizer_algebraic_simplification(NodePtr& node);
         int optimizer_combine_like_terms(NodePtr& node);
+        int optimize_flatten_add(NodePtr& node);
+        int optimize_flatten_mul(NodePtr& node);
+        int optimize_sub(NodePtr& node);
+        int optimize_div(NodePtr& node);
+        int optimize_pow(NodePtr& node);
 
         // sci_calc_mathfunc.cpp
         int set_math_func_list();
@@ -112,15 +117,21 @@ namespace sci_calc {
         double evaluate_log_node(const std::vector<NodePtr>& children);
 
         // sci_calc_expand.cpp
-        int expand(NodePtr& node);
+        int expand(NodePtr& node, size_t depth = 0);
         int flatten_add(NodePtr& node);
         int flatten_mul(NodePtr& node);
-        int fold_add(NodePtr& node);
+        int expand_pow(NodePtr& node);
+        int cartesian_prod(const std::vector<std::vector<NodePtr>>& sets, std::vector<std::vector<NodePtr>>& dst, std::vector<NodePtr>& cur, size_t depth);
 
         // sci_calc_to_string.cpp
         std::string to_string(const NodePtr& node);
         std::string number_to_string(const NodePtr& node);
         std::string special_func_to_string(const NodePtr& node);
+        bool need_paren(const NodePtr& node, const NodePtr& child);
+        std::string to_string_g(const double value, const int precision = 12);
+
+        // sci_calc_sort.cpp
+        int sort_children(NodePtr& node);
     };
 }
 #endif

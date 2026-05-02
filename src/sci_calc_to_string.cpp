@@ -12,8 +12,6 @@ namespace sci_calc {
         }
 
         if (node->type == ND_OPE) {
-            std::string left = to_string(node->children[0]);
-            std::string right = to_string(node->children[1]);
             std::string ope;
             switch(node->id) {
                 case OP_ADD: ope = "+"; break;
@@ -22,7 +20,14 @@ namespace sci_calc {
                 case OP_DIV: ope = "/"; break;
                 case OP_POW: ope = "^"; break;
             }
-            return "(" + left + ")" + ope + "(" + right + ")";
+            std::string ret = "";
+            for (size_t i = 0; i < node->children.size(); i++) {
+                std::string term = to_string(node->children[i]);
+                if (need_paren(node, node->children[i])) term = "(" + term + ")";
+                ret += term;
+                if (i != node->children.size() - 1) ret += ope;
+            }
+            return ret;
         }
 
         if (node->type == ND_NUM) {
@@ -34,7 +39,7 @@ namespace sci_calc {
         }
 
         if (node->type == ND_MATH_FUNC) {
-            return "@" + m_functions[node->id].name + "(" + to_string(node->children[0]) + ")";
+            return m_functions[node->id].name + "(" + to_string(node->children[0]) + ")";
         }
 
         if (node->type == ND_VAR) {
@@ -46,11 +51,42 @@ namespace sci_calc {
 
     std::string SciCalc::number_to_string(const NodePtr& node) {
         if (!node) return "";
-        return std::to_string(node->value);
+        return to_string_g(node->value);
     }
 
     std::string SciCalc::special_func_to_string(const NodePtr& node) {
         if (!node) return "";
         return "";  // TODO
+    }
+
+    bool SciCalc::need_paren(const NodePtr& node, const NodePtr& child) {
+        if (child->type == ND_NUM && child->value < 0) return true;
+        if (child->type != ND_OPE) return false;
+        if (node->type == ND_OPE) {
+            if (node->id == OP_ADD) return false;
+            if (node->id == OP_SUB) {
+                if (child->id != OP_ADD) return false;
+                return true;
+            }
+            if (node->id == OP_MUL) {
+                if (child->id == OP_ADD || child->id == OP_SUB) return true;
+                return false;
+            }
+            if (node->id == OP_DIV) {
+                if (child->id == OP_ADD || child->id == OP_SUB || child->id == OP_MUL) return true;
+                return false;
+            }
+            if (node->id == OP_POW) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    std::string SciCalc::to_string_g(const double value, const int precision) {
+        char buf[64];
+        std::snprintf(buf, sizeof(buf), "%.*g", precision, value);
+        return std::string(buf);
     }
 }

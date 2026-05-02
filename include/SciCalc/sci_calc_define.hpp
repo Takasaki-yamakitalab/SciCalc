@@ -12,10 +12,10 @@ namespace sci_calc {
     };
     enum NODE_TYPE {
         ND_NUM,
+        ND_OPE,
         ND_VAR,
         ND_MATH_FUNC,
         ND_SPECIAL_FUNC,
-        ND_OPE,
         ND_ASSIGN,
         ND_END
     };
@@ -45,6 +45,7 @@ namespace sci_calc {
                 children.push_back(std::make_unique<Node>(*other.children[i]));
             }
         }
+        Node(double val) : type(ND_NUM), value(val) {}
         ~Node() noexcept {}
         Node(Node&&) noexcept = default;
         Node& operator=(Node&&) noexcept = default;
