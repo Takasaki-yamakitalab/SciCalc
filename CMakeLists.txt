@@ -20,6 +20,7 @@ set(SRC
     src/sci_calc_expand.cpp
     src/sci_calc_to_string.cpp
     src/sci_calc_sort.cpp
+    src/sci_calc_define.cpp
     src/sci_calc.cpp)
 
 if(MSVC)
@@ -33,8 +34,10 @@ elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 add_library(${PROJECT_NAME} STATIC ${SRC})
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME} BEFORE PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+target_include_directories(${PROJECT_NAME} PUBLIC
     $<INSTALL_INTERFACE:include>
 )
 
