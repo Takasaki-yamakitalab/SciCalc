@@ -74,11 +74,8 @@ std::string SciCalc::rm_spaces(const std::string& src) {
 
 double SciCalc::calc(const std::string& formula) {
     m_var_id_stack.clear();
-    if (formula != this->formula_cash) {
-        this->formula_cash = formula;
-        std::string buff = rm_spaces(formula);
-        this->ast_cash = parse(buff);
-    }
+    std::string buff = rm_spaces(formula);
+    this->ast_cash = parse(buff);
     double ans = evaluate_node(this->ast_cash);
     assign_memory("preans", get_memory("ans"));
     assign_memory("ans", ans);
