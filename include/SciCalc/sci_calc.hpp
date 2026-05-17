@@ -35,7 +35,6 @@ class SciCalc {
 
     uint32_t m_optimizer = OPTIMIZER_DEFAULT;
 
-    std::string formula_cash;
     NodePtr ast_cash = NULL;
 
    public:

@@ -86,11 +86,8 @@ std::string SciCalc::expand(const std::string& formula) {
     m_var_id_stack.clear();
     uint32_t opt = m_optimizer;
     m_optimizer &= ~OPTIMIZER_CONST_PROPAGATION;
-    if (formula != this->formula_cash) {
-        this->formula_cash = formula;
-        std::string buff = rm_spaces(formula);
-        this->ast_cash = parse(buff);
-    }
+    std::string buff = rm_spaces(formula);
+    this->ast_cash = parse(buff);
     NodePtr ans = std::make_unique<Node>(*this->ast_cash);
     expand(ans);
     m_optimizer = opt;
