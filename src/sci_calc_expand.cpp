@@ -1,4 +1,7 @@
+#include <iterator>
+#include <memory>
 #include "SciCalc/sci_calc.hpp"
+#include "SciCalc/sci_calc_define.hpp"
 
 namespace sci_calc {
 static int sg_stat = 0;
@@ -31,14 +34,11 @@ int SciCalc::expand(NodePtr& node, size_t depth) {
         for (size_t i = 0; i < node->children.size(); i++) {
             expand(node->children[i], depth + 1);
             std::vector<NodePtr> list;
-            if (node->children[i]->type != ND_OPE ||
-                node->children[i]->id != OP_ADD) {
-                list.push_back(std::make_unique<Node>(*node->children[i]));
+            if (node->children[i]->type != ND_OPE || node->children[i]->id != OP_ADD) {
+                list.push_back(std::move(node->children[i]));
             } else {
-                for (size_t j = 0; j < node->children[i]->children.size();
-                     j++) {
-                    list.push_back(std::make_unique<Node>(
-                        *node->children[i]->children[j]));
+                for (size_t j = 0; j < node->children[i]->children.size(); j++) {
+                    list.push_back(std::move(node->children[i]->children[j]));
                 }
             }
             lists.push_back(std::move(list));
@@ -69,38 +69,80 @@ int SciCalc::expand(NodePtr& node, size_t depth) {
 
 int SciCalc::flatten_add(NodePtr& node) {
     if (node->type != ND_OPE) return 0;
-    if (node->id != OP_ADD) return 0;
+    if (node->id != OP_ADD && node->id != OP_SUB) return 0;
 
-    if (flatten_add(node->children[0])) {
-        std::vector<NodePtr> list = std::move(node->children[0]->children);
-        list.push_back(std::move(node->children[1]));
-        node->children = std::move(list);
-    }
-    if (flatten_add(node->children[1])) {
-        std::vector<NodePtr> list = std::move(node->children[1]->children);
-        list.insert(list.begin(), std::move(node->children[0]));
-        node->children = std::move(list);
+    std::vector<NodePtr> list;
+    if (node->id == OP_ADD) {
+        for (auto& child : node->children) {
+            if (flatten_add(child) == 0) {
+                list.push_back(std::move(child));
+                continue;
+            }
+            list.insert(list.end(),
+                        std::make_move_iterator(child->children.begin()),
+                        std::make_move_iterator(child->children.end()));
+        }
+    } else if (node->id == OP_SUB) {
+        node->id = OP_ADD;
+        if (flatten_add(node->children[0])) {
+            list = std::move(node->children[0]->children);
+        } else {
+            list.push_back(std::move(node->children[0]));
+        }
+        flatten_add(node->children[1]);
+        NodePtr right = std::make_unique<Node>();
+        right->type = ND_OPE;
+        right->id = OP_MUL;
+        right->children.push_back(std::make_unique<Node>(-1.0));
+        right->children.push_back(std::move(node->children[1]));
+        for (auto& child : right->children) {
+            child->hash = node_hash(child.get());
+        }
+        right->hash = node_hash(right.get());
+        list.push_back(std::move(right));
     }
 
+    node->children = std::move(list);
     node->hash = node_hash(node.get());
     return 1;
 }
 
 int SciCalc::flatten_mul(NodePtr& node) {
     if (node->type != ND_OPE) return 0;
-    if (node->id != OP_MUL) return 0;
+    if (node->id != OP_MUL && node->id != OP_DIV) return 0;
 
-    if (flatten_mul(node->children[0])) {
-        std::vector<NodePtr> list = std::move(node->children[0]->children);
-        list.push_back(std::move(node->children[1]));
-        node->children = std::move(list);
-    }
-    if (flatten_mul(node->children[1])) {
-        std::vector<NodePtr> list = std::move(node->children[1]->children);
-        list.insert(list.begin(), std::move(node->children[0]));
-        node->children = std::move(list);
+    std::vector<NodePtr> list;
+    if (node->id == OP_MUL) {
+        for (auto& child : node->children) {
+            if (flatten_mul(child) == 0) {
+                list.push_back(std::move(child));
+                continue;
+            }
+            list.insert(list.end(),
+                        std::make_move_iterator(child->children.begin()),
+                        std::make_move_iterator(child->children.end()));
+        }
+    } else if (node->id == OP_DIV) {
+        node->id = OP_MUL;
+        if (flatten_mul(node->children[0])) {
+            list = std::move(node->children[0]->children);
+        } else {
+            list.push_back(std::move(node->children[0]));
+        }
+        flatten_mul(node->children[1]);
+        NodePtr right = std::make_unique<Node>();
+        right->type = ND_OPE;
+        right->id = OP_POW;
+        right->children.push_back(std::move(node->children[1]));
+        right->children.push_back(std::make_unique<Node>(-1.0));
+        for (auto& child : right->children) {
+            child->hash = node_hash(child.get());
+        }
+        right->hash = node_hash(right.get());
+        list.push_back(std::move(right));
     }
 
+    node->children = std::move(list);
     node->hash = node_hash(node.get());
     return 1;
 }

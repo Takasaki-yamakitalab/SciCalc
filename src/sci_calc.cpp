@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "SciCalc/sci_calc_define.hpp"
 #include "SciCalc/sci_calc.hpp"
 
 namespace sci_calc {
@@ -86,6 +87,7 @@ std::string SciCalc::expand(const std::string& formula) {
     m_var_id_stack.clear();
     uint32_t opt = m_optimizer;
     m_optimizer &= ~OPTIMIZER_CONST_PROPAGATION;
+    m_optimizer &= ~OPTIMIZER_COMBINE_LIKE_TERMS;
     std::string buff = rm_spaces(formula);
     this->ast_cash = parse(buff);
     NodePtr ans = std::make_unique<Node>(*this->ast_cash);

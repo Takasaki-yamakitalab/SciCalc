@@ -128,6 +128,8 @@ class SciCalc {
 
     // sci_calc_sort.cpp
     int sort_children(NodePtr& node);
+    int sort_flatten_add(NodePtr& node);
+    int sort_flatten_mul(NodePtr& node);
 };
 }  // namespace sci_calc
 #endif

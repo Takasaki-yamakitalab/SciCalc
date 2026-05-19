@@ -18,6 +18,7 @@ std::string SciCalc::to_string(const NodePtr& node) {
                 ope = "+";
                 break;
             case OP_SUB:
+                printf("sub!\n");
                 ope = "-";
                 break;
             case OP_MUL:
@@ -34,8 +35,8 @@ std::string SciCalc::to_string(const NodePtr& node) {
         for (size_t i = 0; i < node->children.size(); i++) {
             std::string term = to_string(node->children[i]);
             if (need_paren(node, node->children[i])) term = "(" + term + ")";
+            if (!term.empty() && !ret.empty() && !(ope == "+" && term[0] == '-')) ret += ope;
             ret += term;
-            if (i != node->children.size() - 1) ret += ope;
         }
         return ret;
     }
@@ -75,7 +76,11 @@ std::string SciCalc::special_func_to_string(const NodePtr& node) {
 }
 
 bool SciCalc::need_paren(const NodePtr& node, const NodePtr& child) {
-    if (child->type == ND_NUM && child->value < 0) return true;
+    if (child->type == ND_NUM && node->children[0] == child) return false;
+    if (child->type == ND_NUM && child->value < 0) {
+        if (node->type == ND_OPE && node->id == OP_ADD) return false;
+        return true;
+    }
     if (child->type != ND_OPE) return false;
     if (node->type == ND_OPE) {
         if (node->id == OP_ADD) return false;
