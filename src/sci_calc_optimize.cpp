@@ -310,14 +310,8 @@ int SciCalc::optimizer_combine_like_terms(NodePtr& node) {
 int SciCalc::optimize_flatten_add(NodePtr& node) {
     if (node->type != ND_OPE || node->id != OP_ADD) return 0;
     double value = 0;
-    for (auto it = node->children.begin(); it != node->children.end();) {
-        if ((*it)->type == ND_NUM) {
-            value += (*it)->value;
-            it = node->children.erase(it);
-        } else
-            it++;
-    }
     for (auto it = node->children.begin(); it != node->children.end(); it++) {
+        if ((*it)->type == ND_NUM) continue;
         double coef = 1;
         if ((*it)->type == ND_OPE && (*it)->id == OP_MUL &&
             (*it)->children[0]->type == ND_NUM) {
@@ -368,6 +362,13 @@ int SciCalc::optimize_flatten_add(NodePtr& node) {
             *it = std::move(nd);
         }
     }
+    for (auto it = node->children.begin(); it != node->children.end();) {
+        if ((*it)->type == ND_NUM) {
+            value += (*it)->value;
+            it = node->children.erase(it);
+        } else
+            it++;
+    }
     sort_children(node);
     if (node->children.size() == 0 || value != 0) {
         NodePtr nd = std::make_unique<Node>(value);
@@ -386,10 +387,10 @@ int SciCalc::optimize_flatten_add(NodePtr& node) {
 
 int SciCalc::optimize_flatten_mul(NodePtr& node) {
     if (node->type != ND_OPE || node->id != OP_MUL) return 0;
-    double value = 1;
+    double coef = 1;
     for (auto it = node->children.begin(); it != node->children.end();) {
         if ((*it)->type == ND_NUM) {
-            value *= (*it)->value;
+            coef *= (*it)->value;
             it = node->children.erase(it);
         } else
             it++;
@@ -417,14 +418,21 @@ int SciCalc::optimize_flatten_mul(NodePtr& node) {
         }
     }
     sort_children(node);
-    if (node->children.size() == 0 || value != 1) {
-        NodePtr nd = std::make_unique<Node>(value);
+    if (coef == 0) {
+        node->type = ND_NUM;
+        node->id = 0;
+        node->value = 0.0;
+        node->children.clear();
+    }
+    else if (node->children.size() == 0 || coef != 1) {
+        NodePtr nd = std::make_unique<Node>(coef);
         nd->hash = node_hash(nd.get());
         if (node->children.size())
             node->children.insert(node->children.begin(), std::move(nd));
         else
             node = std::move(nd);
     }
+
     if (node->type == ND_OPE && node->children.size() == 1) {
         node = std::move(node->children[0]);
     }

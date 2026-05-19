@@ -57,7 +57,7 @@ int SciCalc::expand(NodePtr& node, size_t depth) {
             term->id = OP_MUL;
             term->children = std::move(result[i]);
             optimize_flatten_mul(term);
-            term->hash = node_hash(term.get());
+            if (!node->children.empty() && term->type == ND_NUM && term->value == 0) continue;
             node->children.push_back(std::move(term));
         }
         optimize_flatten_add(node);
@@ -99,6 +99,7 @@ int SciCalc::flatten_add(NodePtr& node) {
             child->hash = node_hash(child.get());
         }
         right->hash = node_hash(right.get());
+        expand(right);
         list.push_back(std::move(right));
     }
 
