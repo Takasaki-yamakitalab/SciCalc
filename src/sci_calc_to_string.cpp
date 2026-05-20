@@ -109,4 +109,60 @@ std::string SciCalc::to_string_g(const double value, const int precision) {
     std::snprintf(buf, sizeof(buf), "%.*g", precision, value);
     return std::string(buf);
 }
+
+std::string SciCalc::to_string_debug(const NodePtr& node) {
+    if (!node) return "[NULL]";
+
+    if (node->type == ND_ASSIGN) {
+        std::string left = to_string_debug(node->children[0]);
+        std::string right = to_string_debug(node->children[1]);
+        return left + "[ASSIGN]" + right;
+    }
+
+    if (node->type == ND_OPE) {
+        std::string ope;
+        switch (node->id) {
+            case OP_ADD:
+                ope = "[ADD]";
+                break;
+            case OP_SUB:
+                ope = "[SUB]";
+                break;
+            case OP_MUL:
+                ope = "[MUL]";
+                break;
+            case OP_DIV:
+                ope = "[DIV]";
+                break;
+            case OP_POW:
+                ope = "[POW]";
+                break;
+        }
+        std::string ret = "";
+        for (size_t i = 0; i < node->children.size(); i++) {
+            std::string term = "(" + to_string_debug(node->children[i]) + ")";
+            if (!ret.empty()) ret += ope;
+            ret += term;
+        }
+        return ret;
+    }
+
+    if (node->type == ND_NUM) {
+        return number_to_string(node);
+    }
+
+    if (node->type == ND_SPECIAL_FUNC) {
+        return special_func_to_string(node);
+    }
+
+    if (node->type == ND_MATH_FUNC) {
+        return m_functions[node->id].name + "(" + to_string_debug(node->children[0]) + ")";
+    }
+
+    if (node->type == ND_VAR) {
+        return m_memory[node->id].name;
+    }
+
+    return "";
+}
 }  // namespace sci_calc

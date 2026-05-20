@@ -113,7 +113,7 @@ class SciCalc {
     double evaluate_log_node(const std::vector<NodePtr>& children);
 
     // sci_calc_expand.cpp
-    int expand(NodePtr& node, size_t depth = 0);
+    int expand(NodePtr& node);
     int flatten_add(NodePtr& node);
     int flatten_mul(NodePtr& node);
     int expand_pow(NodePtr& node);
@@ -125,6 +125,7 @@ class SciCalc {
     std::string special_func_to_string(const NodePtr& node);
     bool need_paren(const NodePtr& node, const NodePtr& child);
     std::string to_string_g(const double value, const int precision = 12);
+    std::string to_string_debug(const NodePtr& node);
 
     // sci_calc_sort.cpp
     int sort_children(NodePtr& node);

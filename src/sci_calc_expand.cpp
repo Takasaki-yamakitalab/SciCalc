@@ -4,11 +4,10 @@
 #include "SciCalc/sci_calc_define.hpp"
 
 namespace sci_calc {
-static int sg_stat = 0;
-int SciCalc::expand(NodePtr& node, size_t depth) {
+int SciCalc::expand(NodePtr& node) {
     if (node->type == ND_MATH_FUNC || node->type == ND_SPECIAL_FUNC) {
         for (auto& arg : node->children) {
-            expand(arg, depth);
+            expand(arg);
         }
         return 0;
     }
@@ -18,21 +17,18 @@ int SciCalc::expand(NodePtr& node, size_t depth) {
     optimize_div(node);
     optimize_pow(node);
 
-    expand_pow(node);
-
     if (flatten_add(node)) {
         for (size_t i = 0; i < node->children.size(); i++) {
-            expand(node->children[i], depth + 1);
+            expand(node->children[i]);
         }
         optimize_flatten_add(node);
-        node->hash = node_hash(node.get());
     }
 
     if (flatten_mul(node)) {
         // std::cout << "DEBUG: flatten mul" << std::endl;
         std::vector<std::vector<NodePtr>> lists;
         for (size_t i = 0; i < node->children.size(); i++) {
-            expand(node->children[i], depth + 1);
+            expand(node->children[i]);
             std::vector<NodePtr> list;
             if (node->children[i]->type != ND_OPE || node->children[i]->id != OP_ADD) {
                 list.push_back(std::move(node->children[i]));
@@ -47,10 +43,10 @@ int SciCalc::expand(NodePtr& node, size_t depth) {
         std::vector<std::vector<NodePtr>> result;
         std::vector<NodePtr> cur;
         cartesian_prod(lists, result, cur, 0);
-        node->children.clear();
 
         node->type = ND_OPE;
         node->id = OP_ADD;
+        node->children.clear();
         for (size_t i = 0; i < result.size(); i++) {
             NodePtr term = std::make_unique<Node>();
             term->type = ND_OPE;
@@ -61,7 +57,6 @@ int SciCalc::expand(NodePtr& node, size_t depth) {
             node->children.push_back(std::move(term));
         }
         optimize_flatten_add(node);
-        node->hash = node_hash(node.get());
     }
 
     return 0;
@@ -110,6 +105,10 @@ int SciCalc::flatten_add(NodePtr& node) {
 
 int SciCalc::flatten_mul(NodePtr& node) {
     if (node->type != ND_OPE) return 0;
+    if (node->id == OP_POW) {
+        if (expand_pow(node)) return flatten_mul(node);
+        return 0;
+    }
     if (node->id != OP_MUL && node->id != OP_DIV) return 0;
 
     std::vector<NodePtr> list;
@@ -150,18 +149,33 @@ int SciCalc::flatten_mul(NodePtr& node) {
 
 int SciCalc::expand_pow(NodePtr& node) {
     if (node->type != ND_OPE || node->id != OP_POW) return 0;
-    if (node->children[1]->type == ND_NUM &&
-        node->children[1]->value == (size_t)node->children[1]->value) {
-        size_t n = node->children[1]->value;
+    if (node->children.size() < 2) return 0;
+
+    expand(node->children[1]);
+
+    if (node->children[1]->type != ND_NUM) return 0;
+
+    double n = (int)node->children[1]->value;
+    if (n > 1) {
+        NodePtr nd = std::make_unique<Node>(*node);
+        nd->children[1]->value -= (int)n;
+
         node->children.erase(node->children.begin() + 1);
         node->type = ND_OPE;
         node->id = OP_MUL;
-        for (size_t i = 1; i < n; i++) {
+        for (int i = 1; i < (int)n; i++) {
             node->children.push_back(
                 std::make_unique<Node>(*node->children[0]));
         }
+        if (nd->children[1]->value != 0) {
+            expand(nd->children[0]);
+            node->children.push_back(std::move(nd));
+        }
         node->hash = node_hash(node.get());
+        return 1;
     }
+
+    expand(node->children[0]);
     return 0;
 }
 

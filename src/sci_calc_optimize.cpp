@@ -378,7 +378,7 @@ int SciCalc::optimize_flatten_add(NodePtr& node) {
         else
             node = std::move(nd);
     }
-    if (node->type == ND_OPE && node->children.size() == 1) {
+    while (node->type == ND_OPE && node->children.size() == 1) {
         node = std::move(node->children[0]);
     }
     node->hash = node_hash(node.get());
@@ -388,6 +388,8 @@ int SciCalc::optimize_flatten_add(NodePtr& node) {
 int SciCalc::optimize_flatten_mul(NodePtr& node) {
     if (node->type != ND_OPE || node->id != OP_MUL) return 0;
     double coef = 1;
+
+    // y*2*x*y*3*x^2*x*x^(-1) -> 6, y*x*x^2*x*x^(-1)
     for (auto it = node->children.begin(); it != node->children.end();) {
         if ((*it)->type == ND_NUM) {
             coef *= (*it)->value;
@@ -395,36 +397,64 @@ int SciCalc::optimize_flatten_mul(NodePtr& node) {
         } else
             it++;
     }
+    if (coef == 0) {
+        node = std::make_unique<Node>(0);
+        node->hash = node_hash(node.get());
+        return 0;
+    }
+
+    // 6, y*x*x^2*x*x^(-1) -> 6, y^1*x^2*x^2*x^(-1)
     for (auto it = node->children.begin(); it != node->children.end(); it++) {
-        int cnt = 1;
-        for (auto i = it; i != node->children.end();) {
-            if (it != i && is_equal((*it).get(), (*i).get())) {
-                cnt++;
+        double index = 1;
+        for (auto i = it + 1; i != node->children.end();) {
+            if (is_equal((*it).get(), (*i).get())) {
+                index++;
                 i = node->children.erase(i);
             } else
                 i++;
         }
-        if (cnt != 1) {
-            NodePtr nd = std::make_unique<Node>();
-            nd->type = ND_OPE;
-            nd->id = OP_POW;
-            NodePtr n = std::make_unique<Node>((double)cnt);
-            n->hash = node_hash(n.get());
-            nd->children.push_back(std::move(*it));
-            nd->children.push_back(std::move(n));
-            optimize_pow(nd);
-            nd->hash = node_hash(nd.get());
-            *it = std::move(nd);
+        NodePtr nd = std::make_unique<Node>();
+        nd->type = ND_OPE;
+        nd->id = OP_POW;
+        NodePtr n = std::make_unique<Node>(index);
+        n->hash = node_hash(n.get());
+        nd->children.push_back(std::move(*it));
+        nd->children.push_back(std::move(n));
+        optimize_pow(nd);
+        nd->hash = node_hash(nd.get());
+        *it = std::move(nd);
+    }
+
+    // 6, y^1*x^2*x^2*x^(-1) -> 6, y*x^3
+    for (auto it = node->children.begin(); it != node->children.end(); it++) {
+        for (auto i = it + 1; i != node->children.end();) {
+            if (is_equal((*it)->children[0].get(), (*i)->children[0].get())) {
+                NodePtr n = std::make_unique<Node>();
+                n->type = ND_OPE;
+                n->id = OP_ADD;
+                n->children.push_back(std::move((*it)->children[1]));
+                n->children.push_back(std::move((*i)->children[1]));
+                n->hash = node_hash(n.get());
+                (*it)->children[1] = std::move(n);
+                i = node->children.erase(i);
+            } else
+                i++;
         }
+        if (flatten_add((*it)->children[1]))
+            optimize_flatten_add((*it)->children[1]);
+        if ((*it)->children[1]->type == ND_NUM && (*it)->children[1]->value == 1.0) {
+            (*it) = std::move((*it)->children[0]);
+        } else if ((*it)->children[1]->type == ND_NUM && (*it)->children[1]->value == 0.0) {
+            (*it) = std::make_unique<Node>(1.0);
+        }
+        (*it)->hash = node_hash((*it).get());
     }
+
+    // 6, y*x^3 -> 6, x^3*y
     sort_children(node);
-    if (coef == 0) {
-        node->type = ND_NUM;
-        node->id = 0;
-        node->value = 0.0;
-        node->children.clear();
-    }
-    else if (node->children.size() == 0 || coef != 1) {
+
+    // 6, x^3*y -> 6*x^3*y
+    if (node->children.size() == 0 || coef != 1) {
         NodePtr nd = std::make_unique<Node>(coef);
         nd->hash = node_hash(nd.get());
         if (node->children.size())
@@ -433,7 +463,7 @@ int SciCalc::optimize_flatten_mul(NodePtr& node) {
             node = std::move(nd);
     }
 
-    if (node->type == ND_OPE && node->children.size() == 1) {
+    while (node->type == ND_OPE && node->children.size() == 1) {
         node = std::move(node->children[0]);
     }
     node->hash = node_hash(node.get());
