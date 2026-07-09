@@ -20,17 +20,24 @@ int SciCalc::sort_flatten_mul(NodePtr& node) {
     if (node->type != ND_OPE) return 0;
     if (node->id != OP_MUL) return 0;
 
-    auto compare = [&](NodePtr& a, NodePtr& b) -> bool {
-        if (a->type != b->type) {
-            return a->type < b->type;
-        }
-        if (a->type == ND_VAR) {
+    auto comp = [&](auto self, NodePtr& a, NodePtr& b) -> bool {
+        // number must be first.
+        if (a->type == ND_NUM) return false;
+        if (b->type == ND_NUM) return false;
+
+        if (a->type == ND_VAR && b->type == ND_VAR)
             return m_memory[a->id].name < m_memory[b->id].name;
-        }
-        if (a->type == ND_MATH_FUNC) {
-            return m_functions[a->id].name < m_functions[b->id].name;
-        }
+
+        if (a->type == ND_OPE && a->id == OP_POW)
+            return self(self, a->children[0], b);
+        if (b->type == ND_OPE && b->id == OP_POW)
+            return self(self, a, b->children[0]);
+
         return a->hash < b->hash;
+    };
+
+    auto compare = [&](NodePtr& a, NodePtr& b) -> bool {
+        return comp(comp, a, b);
     };
 
     std::sort(node->children.begin(), node->children.end(), compare);

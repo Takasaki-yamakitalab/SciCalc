@@ -25,7 +25,6 @@ int SciCalc::expand(NodePtr& node) {
     }
 
     if (flatten_mul(node)) {
-        // std::cout << "DEBUG: flatten mul" << std::endl;
         std::vector<std::vector<NodePtr>> lists;
         for (size_t i = 0; i < node->children.size(); i++) {
             expand(node->children[i]);

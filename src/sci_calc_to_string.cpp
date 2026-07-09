@@ -34,8 +34,12 @@ std::string SciCalc::to_string(const NodePtr& node) {
         std::string ret = "";
         for (size_t i = 0; i < node->children.size(); i++) {
             std::string term = to_string(node->children[i]);
+            if (ret.empty() && ope == "*" && term == "-1") {
+                ret += "-";
+                continue;
+            }
             if (need_paren(node, node->children[i])) term = "(" + term + ")";
-            if (!term.empty() && !ret.empty() && !(ope == "+" && term[0] == '-')) ret += ope;
+            if (!term.empty() && !ret.empty() && !(ope == "+" && term[0] == '-') && ret.back() != '-') ret += ope;
             ret += term;
         }
         return ret;
