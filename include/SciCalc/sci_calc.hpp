@@ -117,7 +117,8 @@ class SciCalc {
     int flatten_add(NodePtr& node);
     int flatten_mul(NodePtr& node);
     int expand_pow(NodePtr& node);
-    int cartesian_prod(const std::vector<std::vector<NodePtr>>& sets, std::vector<std::vector<NodePtr>>& dst, std::vector<NodePtr>& cur, size_t depth);
+    int cartesian_prod(const std::vector<std::vector<NodePtr>>& sets, std::vector<std::vector<NodePtr>>& dst,
+                       std::vector<NodePtr>& cur, size_t depth);
 
     // sci_calc_to_string.cpp
     std::string to_string(const NodePtr& node);
@@ -131,6 +132,10 @@ class SciCalc {
     int sort_children(NodePtr& node);
     int sort_flatten_add(NodePtr& node);
     int sort_flatten_mul(NodePtr& node);
+
+    std::vector<Memory>& memories() { return this->m_memory; }
+    std::vector<MathFunc>& math_functions() { return this->m_functions; }
+    std::vector<SpecialFunc>& special_functions() { return this->m_special_functions; }
 };
 }  // namespace sci_calc
 #endif

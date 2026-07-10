@@ -7,6 +7,7 @@ int SciCalc::set_integral_N(int N) {
 }
 
 int SciCalc::set_special_func_list() {
+    m_special_functions.clear();
     // special functions
     // sort by longest name first
     // all special function names begin with '\\'

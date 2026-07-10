@@ -1,12 +1,12 @@
 #ifndef SCI_CALC_DEFINE_HPP
 #define SCI_CALC_DEFINE_HPP
 
+#include <stdio.h>
 #include <cstdint>
 #include <string>
 #include <vector>
 #include <functional>
 #include <memory>
-#include <unordered_map>
 
 namespace sci_calc {
 enum OPE_TYPE {
@@ -58,75 +58,20 @@ using NodePtr = std::unique_ptr<Node>;
 struct Memory {
     std::string name;
     double value;
-    Memory(std::string n, double v);
+    Memory(std::string name, double v);
 };
 
 struct MathFunc {
     std::string name;
     std::function<double(double)> calc;
-    MathFunc(std::string n, std::function<double(double)> f);
+    MathFunc(std::string name, std::function<double(double)> f);
 };
 
 struct SpecialFunc {
     std::string name;
     int arg_num;
     std::function<double(const std::vector<NodePtr>&)> calc;
-    SpecialFunc(std::string n, int argc, std::function<double(const std::vector<NodePtr>&)> f);
-};
-
-const std::unordered_map<std::string, int> VAR_ORDER = {
-    {"x", 0},
-    {"y", 1},
-    {"z", 2},
-    {"t", 3},
-    {"a", 4},
-    {"b", 5},
-    {"c", 6},
-    {"d", 7},
-    {"e", 8},
-    {"f", 9},
-    {"g", 10},
-    {"h", 11},
-    {"i", 12},
-    {"j", 13},
-    {"k", 14},
-    {"l", 15},
-    {"m", 16},
-    {"n", 17},
-    {"o", 18},
-    {"p", 19},
-    {"q", 20},
-    {"r", 21},
-    {"s", 22},
-    {"u", 23},
-    {"v", 24},
-    {"w", 25},
-    {"A", 26},
-    {"B", 27},
-    {"C", 28},
-    {"D", 29},
-    {"E", 30},
-    {"F", 31},
-    {"G", 32},
-    {"H", 33},
-    {"I", 34},
-    {"J", 35},
-    {"K", 36},
-    {"L", 37},
-    {"M", 38},
-    {"N", 39},
-    {"O", 40},
-    {"P", 41},
-    {"Q", 42},
-    {"R", 43},
-    {"S", 44},
-    {"T", 45},
-    {"U", 46},
-    {"V", 47},
-    {"W", 48},
-    {"X", 49},
-    {"Y", 50},
-    {"Z", 51},
+    SpecialFunc(std::string name, int argc, std::function<double(const std::vector<NodePtr>&)> f);
 };
 
 }  // namespace sci_calc
