@@ -234,7 +234,7 @@ int SciCalc::parse_numbers(std::string& formula, NodePtr& node) {
     return 0;
 }
 
-double SciCalc::evaluate_node(const NodePtr& node) {
+Complex SciCalc::evaluate_node(const NodePtr& node) {
     if (node == NULL) return 0.0;
     if (node->type == ND_NUM) return node->value;
     if (node->type == ND_VAR) return m_memory[node->id].value;

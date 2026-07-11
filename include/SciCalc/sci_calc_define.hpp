@@ -7,6 +7,7 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <complex>
 
 namespace sci_calc {
 enum OPE_TYPE {
@@ -40,15 +41,17 @@ constexpr uint32_t OPTIMIZER_ALL = 0xFFFFFFFF;
 
 constexpr uint32_t OPTIMIZER_DEFAULT = OPTIMIZER_CONST_FOLDING + OPTIMIZER_CONST_PROPAGATION + OPTIMIZER_ALGEBRAIC_SIMPLIFICATION + OPTIMIZER_COMBINE_LIKE_TERMS;
 
+using Complex = std::complex<double>;
+
 struct Node {
     size_t hash;
     NODE_TYPE type = ND_NUM;
     int id = 0;
-    double value = 0.0;
+    Complex value = 0.0;
     std::vector<std::unique_ptr<Node>> children;
     Node();
     Node(const Node& other);
-    Node(double val);
+    Node(Complex val);
     ~Node() noexcept {}
     Node(Node&&) noexcept = default;
     Node& operator=(Node&&) noexcept = default;
@@ -57,21 +60,21 @@ using NodePtr = std::unique_ptr<Node>;
 
 struct Memory {
     std::string name;
-    double value;
-    Memory(std::string name, double v);
+    Complex value;
+    Memory(std::string name, Complex v);
 };
 
 struct MathFunc {
     std::string name;
-    std::function<double(double)> calc;
-    MathFunc(std::string name, std::function<double(double)> f);
+    std::function<Complex(Complex)> calc;
+    MathFunc(std::string name, std::function<Complex(Complex)> f);
 };
 
 struct SpecialFunc {
     std::string name;
     int arg_num;
-    std::function<double(const std::vector<NodePtr>&)> calc;
-    SpecialFunc(std::string name, int argc, std::function<double(const std::vector<NodePtr>&)> f);
+    std::function<std::complex<double>(const std::vector<NodePtr>&)> calc;
+    SpecialFunc(std::string name, int argc, std::function<Complex(const std::vector<NodePtr>&)> f);
 };
 
 }  // namespace sci_calc

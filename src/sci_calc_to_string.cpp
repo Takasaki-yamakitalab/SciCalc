@@ -81,7 +81,7 @@ std::string SciCalc::special_func_to_string(const NodePtr& node) {
 
 bool SciCalc::need_paren(const NodePtr& node, const NodePtr& child) {
     if (child->type == ND_NUM && node->children[0] == child) return false;
-    if (child->type == ND_NUM && child->value < 0) {
+    if (child->type == ND_NUM && child->value.real() < 0) {
         if (node->type == ND_OPE && node->id == OP_ADD) return false;
         return true;
     }
@@ -112,6 +112,25 @@ std::string SciCalc::to_string_g(const double value, const int precision) {
     char buf[64];
     std::snprintf(buf, sizeof(buf), "%.*g", precision, value);
     return std::string(buf);
+}
+std::string SciCalc::to_string_g(const Complex value, const int precision) {
+    if (value.imag() == 0.0) return to_string_g(value.real(), precision);
+
+    const double PI = std::atan(1.0) * 4.0;
+    double arg = std::abs(std::arg(value));
+    if (arg < 1e-15 || PI - 1e-15 < arg) return to_string_g(value.real(), precision);
+
+    std::string ret;
+    if (arg < PI / 2 - 1e-15 || PI / 2 + 1e-15 < arg) ret = to_string_g(value.real(), precision / 2);
+    std::string imag = to_string_g(value.imag(), precision / 2);
+    if (imag[0] == '-') {
+        ret += "-i";
+        imag = imag.substr(1);
+    }
+    else if (!ret.empty()) ret += "+i";
+    else ret = "i";
+    if (value.imag() != 1.0) ret += imag;
+    return ret;
 }
 
 std::string SciCalc::to_string_debug(const NodePtr& node) {

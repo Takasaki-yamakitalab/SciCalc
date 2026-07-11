@@ -7,31 +7,32 @@ int SciCalc::set_math_func_list() {
     // mathematical functions
     // sort by longest name first
     // all mathematical function names begin with '@'.
-    this->m_functions.emplace_back("@arcsinh",
-                                   [](double x) { return asinh(x); });
-    this->m_functions.emplace_back("@arccosh",
-                                   [](double x) { return acosh(x); });
-    this->m_functions.emplace_back("@arctanh",
-                                   [](double x) { return atanh(x); });
-    this->m_functions.emplace_back("@arcsin", [](double x) { return asin(x); });
-    this->m_functions.emplace_back("@arccos", [](double x) { return acos(x); });
-    this->m_functions.emplace_back("@arctan", [](double x) { return atan(x); });
-    this->m_functions.emplace_back("@gamma",
-                                   [](double x) { return tgamma(x); });
-    this->m_functions.emplace_back("@sinh", [](double x) { return sinh(x); });
-    this->m_functions.emplace_back("@cosh", [](double x) { return cosh(x); });
-    this->m_functions.emplace_back("@tanh", [](double x) { return tanh(x); });
-    this->m_functions.emplace_back("@sqrt", [](double x) { return sqrt(x); });
-    this->m_functions.emplace_back("@cbrt", [](double x) { return cbrt(x); });
-    this->m_functions.emplace_back("@sin", [](double x) { return sin(x); });
-    this->m_functions.emplace_back("@cos", [](double x) { return cos(x); });
-    this->m_functions.emplace_back("@tan", [](double x) { return tan(x); });
-    this->m_functions.emplace_back("@log", [](double x) { return log10(x); });
-    this->m_functions.emplace_back("@exp", [](double x) { return exp(x); });
-    this->m_functions.emplace_back("@ln", [](double x) { return log(x); });
+    auto ignore_eps = [](Complex x, double eps = 1e-15) -> Complex {
+        if (std::abs(x) < eps) return 0.0;
+        return x;
+    };
+
+    this->m_functions.emplace_back("@arcsinh",  [](Complex x) { return asinh(x); });
+    this->m_functions.emplace_back("@arccosh",  [](Complex x) { return acosh(x); });
+    this->m_functions.emplace_back("@arctanh",  [](Complex x) { return atanh(x); });
+    this->m_functions.emplace_back("@arcsin",   [](Complex x) { return asin(x); });
+    this->m_functions.emplace_back("@arccos",   [](Complex x) { return acos(x); });
+    this->m_functions.emplace_back("@arctan",   [](Complex x) { return atan(x); });
+    this->m_functions.emplace_back("@gamma",    [](Complex x) { return tgamma(x.real()); });
+    this->m_functions.emplace_back("@sinh",     [](Complex x) { return sinh(x); });
+    this->m_functions.emplace_back("@cosh",     [](Complex x) { return cosh(x); });
+    this->m_functions.emplace_back("@tanh",     [](Complex x) { return tanh(x); });
+    this->m_functions.emplace_back("@sqrt",     [](Complex x) { return sqrt(x); });
+    this->m_functions.emplace_back("@cbrt",     [](Complex x) { return pow(x, 1/3); });
+    this->m_functions.emplace_back("@sin",      [&](Complex x) { return ignore_eps(sin(x)); });
+    this->m_functions.emplace_back("@cos",      [&](Complex x) { return ignore_eps(cos(x)); });
+    this->m_functions.emplace_back("@tan",      [&](Complex x) { return ignore_eps(tan(x)); });
+    this->m_functions.emplace_back("@log",      [](Complex x) { return log10(x); });
+    this->m_functions.emplace_back("@exp",      [](Complex x) { return exp(x); });
+    this->m_functions.emplace_back("@ln",       [](Complex x) { return log(x); });
 
     // error
-    this->m_functions.emplace_back("", [](double x) {
+    this->m_functions.emplace_back("", [](Complex x) {
         (void)x;
         fprintf(stderr, "[ERROR] Undefined function name.\n");
         return NAN;

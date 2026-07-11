@@ -46,7 +46,7 @@ class SciCalc {
     ~SciCalc();
     int init();
     std::string rm_spaces(const std::string& src);
-    double calc(const std::string& formula);
+    Complex calc(const std::string& formula);
     std::string expand(const std::string& formula);
 
     // sci_calc_ast.cpp
@@ -59,7 +59,7 @@ class SciCalc {
     NodePtr parse(std::string& formula);
     int parse_special_func_args(std::string& func, NodePtr& node);
     int parse_numbers(std::string& formula, NodePtr& node);
-    double evaluate_node(const NodePtr& node);
+    Complex evaluate_node(const NodePtr& node);
 
     // sci_calc_optimize.cpp
     bool is_equal(const Node* a, const Node* b);
@@ -92,8 +92,8 @@ class SciCalc {
     int save_memory();
     int reset_memory();
     int get_memory_id(const std::string& name);
-    double get_memory(const std::string& name);
-    double assign_memory(const std::string& name, double val);
+    Complex get_memory(const std::string& name);
+    Complex assign_memory(const std::string& name, Complex val);
     void load_memories(const std::vector<Memory>& mems);
     std::vector<Memory> get_all_memories();
 
@@ -104,13 +104,13 @@ class SciCalc {
     int detect_special_func(const std::string& func);
     std::string rm_special_func_name(std::string& func);
     std::vector<std::string> get_special_func_args(const std::string& func);
-    double evaluate_sum_node(const std::vector<NodePtr>& children);
-    double evaluate_prod_node(const std::vector<NodePtr>& children);
-    double evaluate_int_node(const std::vector<NodePtr>& children);
-    double evaluate_diff_node(const std::vector<NodePtr>& children);
-    double evaluate_perm_node(const std::vector<NodePtr>& children);
-    double evaluate_comb_node(const std::vector<NodePtr>& children);
-    double evaluate_log_node(const std::vector<NodePtr>& children);
+    Complex evaluate_sum_node(const std::vector<NodePtr>& children);
+    Complex evaluate_prod_node(const std::vector<NodePtr>& children);
+    Complex evaluate_int_node(const std::vector<NodePtr>& children);
+    Complex evaluate_diff_node(const std::vector<NodePtr>& children);
+    Complex evaluate_perm_node(const std::vector<NodePtr>& children);
+    Complex evaluate_comb_node(const std::vector<NodePtr>& children);
+    Complex evaluate_log_node(const std::vector<NodePtr>& children);
 
     // sci_calc_expand.cpp
     int expand(NodePtr& node);
@@ -126,6 +126,7 @@ class SciCalc {
     std::string special_func_to_string(const NodePtr& node);
     bool need_paren(const NodePtr& node, const NodePtr& child);
     std::string to_string_g(const double value, const int precision = 12);
+    std::string to_string_g(const Complex value, const int precision = 12);
     std::string to_string_debug(const NodePtr& node);
 
     // sci_calc_sort.cpp
