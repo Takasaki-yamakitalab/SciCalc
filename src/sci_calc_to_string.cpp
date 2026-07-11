@@ -114,7 +114,7 @@ std::string SciCalc::to_string_g(const double value, const int precision) {
     return std::string(buf);
 }
 std::string SciCalc::to_string_g(const Complex value, const int precision) {
-    if (value.imag() == 0.0) return to_string_g(value.real(), precision);
+    if (value.imag() == 0.0 || std::isnan(value.real()) || std::isnan(value.imag())) return to_string_g(value.real(), precision);
 
     const double PI = std::atan(1.0) * 4.0;
     double arg = std::abs(std::arg(value));
