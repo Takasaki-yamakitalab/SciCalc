@@ -72,8 +72,8 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
             node->children[1]->type != ND_NUM)
             return 0;
         // if all children of the operator node are numbers
-        double left = node->children[0]->value;
-        double right = node->children[1]->value;
+        Complex left = node->children[0]->value;
+        Complex right = node->children[1]->value;
         node->type = ND_NUM;
         if (node->id == OP_ADD) node->value = left + right;
         if (node->id == OP_SUB) node->value = left - right;
@@ -87,7 +87,7 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
     if (node->type == ND_MATH_FUNC) {
         if (node->children[0]->type != ND_NUM) return 0;
         // if the argument of the mathematical function is a number
-        double x = node->children[0]->value;
+        Complex x = node->children[0]->value;
         node->type = ND_NUM;
         node->value = m_functions[node->id].calc(x);
         node->id = 0;
@@ -101,12 +101,10 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
                 node->children[3]->type != ND_NUM)
                 return 0;
             // if the children of sum node are numbers
-            double start = node->children[2]->value;
-            double end = node->children[3]->value;
+            double start = node->children[2]->value.real();
+            double end = node->children[3]->value.real();
             node->type = ND_NUM;
-            node->value =
-                node->children[0]->value *
-                std::max((int)(end + 0.5) - (int)(start + 0.5) + 1, 0);
+            node->value = node->children[0]->value * (double)std::max((int)(end + 0.5) - (int)(start + 0.5) + 1, 0);
             node->id = 0;
             node->children.clear();
             return 0;
@@ -117,8 +115,8 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
                 node->children[3]->type != ND_NUM)
                 return 0;
             // if the children of prod node are numbers
-            double start = node->children[2]->value;
-            double end = node->children[3]->value;
+            double start = node->children[2]->value.real();
+            double end = node->children[3]->value.real();
             node->type = ND_NUM;
             node->value = std::pow(
                 node->children[0]->value,
@@ -133,8 +131,8 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
                 node->children[3]->type != ND_NUM)
                 return 0;
             // if the children of int node are numbers
-            double start = node->children[2]->value;
-            double end = node->children[3]->value;
+            double start = node->children[2]->value.real();
+            double end = node->children[3]->value.real();
             node->type = ND_NUM;
             node->value = node->children[0]->value * (end - start);
             node->id = 0;
@@ -155,8 +153,8 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
                 node->children[1]->type != ND_NUM)
                 return 0;
             // if the children of perm node are numbers
-            double n = node->children[0]->value;
-            double r = node->children[1]->value;
+            double n = node->children[0]->value.real();
+            double r = node->children[1]->value.real();
             node->type = ND_NUM;
             node->value = permutation(n, r);
             node->id = 0;
@@ -168,8 +166,8 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
                 node->children[1]->type != ND_NUM)
                 return 0;
             // if the children of comb node are numbers
-            double n = node->children[0]->value;
-            double r = node->children[1]->value;
+            double n = node->children[0]->value.real();
+            double r = node->children[1]->value.real();
             node->type = ND_NUM;
             node->value = combination(n, r);
             node->id = 0;
@@ -181,8 +179,8 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
                 node->children[1]->type != ND_NUM)
                 return 0;
             // if the children of log node are numbers
-            double a = node->children[0]->value;
-            double x = node->children[1]->value;
+            double a = node->children[0]->value.real();
+            double x = node->children[1]->value.real();
             node->type = ND_NUM;
             node->value = std::log(x) / std::log(a);
             node->id = 0;
@@ -211,28 +209,28 @@ int SciCalc::optimizer_algebraic_simplification(NodePtr& node) {
 
     if (node->id == OP_ADD) {
         if (node->children[0]->type == ND_NUM &&
-            node->children[0]->value == 0) {
+            node->children[0]->value == 0.0) {
             node = std::move(node->children[1]);
             return 0;
         }
         if (node->children[1]->type == ND_NUM &&
-            node->children[1]->value == 0) {
+            node->children[1]->value == 0.0) {
             node = std::move(node->children[0]);
             return 0;
         }
     }
     if (node->id == OP_SUB) {
         if (node->children[1]->type == ND_NUM &&
-            node->children[1]->value == 0) {
+            node->children[1]->value == 0.0) {
             node = std::move(node->children[0]);
             return 0;
         }
     }
     if (node->id == OP_MUL) {
         if (node->children[0]->type == ND_NUM &&
-                node->children[0]->value == 0 ||
+                node->children[0]->value == 0.0 ||
             node->children[1]->type == ND_NUM &&
-                node->children[1]->value == 0) {
+                node->children[1]->value == 0.0) {
             node->type = ND_NUM;
             node->id = 0;
             node->value = 0;
@@ -240,19 +238,19 @@ int SciCalc::optimizer_algebraic_simplification(NodePtr& node) {
             return 0;
         }
         if (node->children[0]->type == ND_NUM &&
-            node->children[0]->value == 1) {
+            node->children[0]->value == 1.0) {
             node = std::move(node->children[1]);
             return 0;
         }
         if (node->children[1]->type == ND_NUM &&
-            node->children[1]->value == 1) {
+            node->children[1]->value == 1.0) {
             node = std::move(node->children[0]);
             return 0;
         }
     }
     if (node->id == OP_DIV) {
         if (node->children[0]->type == ND_NUM &&
-            node->children[0]->value == 0) {
+            node->children[0]->value == 0.0) {
             node->type = ND_NUM;
             node->id = 0;
             node->value = 0;
@@ -260,7 +258,7 @@ int SciCalc::optimizer_algebraic_simplification(NodePtr& node) {
             return 0;
         }
         if (node->children[1]->type == ND_NUM &&
-            node->children[1]->value == 1) {
+            node->children[1]->value == 1.0) {
             node = std::move(node->children[0]);
             return 0;
         }
@@ -309,10 +307,10 @@ int SciCalc::optimizer_combine_like_terms(NodePtr& node) {
 
 int SciCalc::optimize_flatten_add(NodePtr& node) {
     if (node->type != ND_OPE || node->id != OP_ADD) return 0;
-    double value = 0;
+    Complex value = 0;
     for (auto it = node->children.begin(); it != node->children.end(); it++) {
         if ((*it)->type == ND_NUM) continue;
-        double coef = 1;
+        Complex coef = 1.0;
         if ((*it)->type == ND_OPE && (*it)->id == OP_MUL &&
             (*it)->children[0]->type == ND_NUM) {
             coef = (*it)->children[0]->value;
@@ -341,14 +339,14 @@ int SciCalc::optimize_flatten_add(NodePtr& node) {
                     continue;
                 }
             } else if (is_equal((*it).get(), (*i).get())) {
-                coef++;
+                coef += 1.0;
                 i = node->children.erase(i);
                 continue;
             }
 
             i++;
         }
-        if (coef != 1) {
+        if (coef != 1.0) {
             NodePtr nd = std::make_unique<Node>();
             nd->type = ND_OPE;
             nd->id = OP_MUL;
@@ -370,7 +368,7 @@ int SciCalc::optimize_flatten_add(NodePtr& node) {
             it++;
     }
     sort_children(node);
-    if (node->children.size() == 0 || value != 0) {
+    if (node->children.size() == 0 || value != 0.0) {
         NodePtr nd = std::make_unique<Node>(value);
         nd->hash = node_hash(nd.get());
         if (node->children.size())
@@ -387,7 +385,7 @@ int SciCalc::optimize_flatten_add(NodePtr& node) {
 
 int SciCalc::optimize_flatten_mul(NodePtr& node) {
     if (node->type != ND_OPE || node->id != OP_MUL) return 0;
-    double coef = 1;
+    Complex coef = 1.0;
 
     // y*2*x*y*3*x^2*x*x^(-1) -> 6, y*x*x^2*x*x^(-1)
     for (auto it = node->children.begin(); it != node->children.end();) {
@@ -397,7 +395,7 @@ int SciCalc::optimize_flatten_mul(NodePtr& node) {
         } else
             it++;
     }
-    if (coef == 0) {
+    if (coef == 0.0) {
         node = std::make_unique<Node>(0);
         node->hash = node_hash(node.get());
         return 0;
@@ -454,7 +452,7 @@ int SciCalc::optimize_flatten_mul(NodePtr& node) {
     sort_children(node);
 
     // 6, x^3*y -> 6*x^3*y
-    if (node->children.size() == 0 || coef != 1) {
+    if (node->children.size() == 0 || coef != 1.0) {
         NodePtr nd = std::make_unique<Node>(coef);
         nd->hash = node_hash(nd.get());
         if (node->children.size())
@@ -474,7 +472,7 @@ int SciCalc::optimize_sub(NodePtr& node) {
     if (node->type != ND_OPE || node->id != OP_SUB) return 0;
     if (node->children[0]->type != ND_NUM || node->children[1]->type != ND_NUM)
         return 0;
-    double value = node->children[0]->value - node->children[1]->value;
+    Complex value = node->children[0]->value - node->children[1]->value;
     node->type = ND_NUM;
     node->id = 0;
     node->value = value;
@@ -486,7 +484,7 @@ int SciCalc::optimize_div(NodePtr& node) {
     if (node->type != ND_OPE || node->id != OP_DIV) return 0;
     if (node->children[0]->type != ND_NUM || node->children[1]->type != ND_NUM)
         return 0;
-    double value = node->children[0]->value / node->children[1]->value;
+    Complex value = node->children[0]->value / node->children[1]->value;
     node->type = ND_NUM;
     node->id = 0;
     node->value = value;
@@ -516,7 +514,7 @@ int SciCalc::optimize_pow(NodePtr& node) {
     if (node->children[0]->type != ND_NUM || node->children[1]->type != ND_NUM)
         return 0;
     // ex. 2^2 -> 4
-    double value = std::pow(node->children[0]->value, node->children[1]->value);
+    Complex value = std::pow(node->children[0]->value, node->children[1]->value);
     node->type = ND_NUM;
     node->id = 0;
     node->value = value;

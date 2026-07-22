@@ -73,11 +73,11 @@ std::string SciCalc::rm_spaces(const std::string& src) {
     return dst;
 }
 
-double SciCalc::calc(const std::string& formula) {
+Complex SciCalc::calc(const std::string& formula) {
     m_var_id_stack.clear();
     std::string buff = rm_spaces(formula);
     this->ast_cash = parse(buff);
-    double ans = evaluate_node(this->ast_cash);
+    Complex ans = evaluate_node(this->ast_cash);
     assign_memory("preans", get_memory("ans"));
     assign_memory("ans", ans);
     return ans;

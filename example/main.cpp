@@ -10,8 +10,9 @@ int main(void) {
         std::cout << ">> ";
         std::cin >> buff;
         if (buff == "end" || buff == "exit") break;
+        sci_calc::Complex ans = calculator.calc(buff);
         std::cout << "ans:" << std::endl;
-        std::cout << "    " << calculator.calc(buff) << std::endl;
+        std::cout << "    " << (ans == 0.0 ? "0" : calculator.to_string_g(ans)) << std::endl;
     }
     return 0;
 }

@@ -1,4 +1,5 @@
 #include "SciCalc/sci_calc.hpp"
+#include "SciCalc/sci_calc_define.hpp"
 #include <cmath>
 
 namespace sci_calc {
@@ -67,13 +68,13 @@ std::vector<std::string> SciCalc::get_special_func_args(const std::string& func)
     return args;
 }
 
-double SciCalc::evaluate_sum_node(const std::vector<NodePtr>& children) {
+Complex SciCalc::evaluate_sum_node(const std::vector<NodePtr>& children) {
     if (children.size() != 4) return NAN;
-    double sum = 0.0;
+    Complex sum = 0.0;
     int var_id = children[1]->id;
-    int start = (int)(evaluate_node(children[2]) + 0.5);
-    int end = (int)(evaluate_node(children[3]) + 0.5);
-    double memory = m_memory[var_id].value;
+    int start = (int)(evaluate_node(children[2]).real() + 0.5);
+    int end = (int)(evaluate_node(children[3]).real() + 0.5);
+    Complex memory = m_memory[var_id].value;
     for (int i = start; i <= end; i++) {
         m_memory[var_id].value = i;
         sum += evaluate_node(children[0]);
@@ -81,13 +82,13 @@ double SciCalc::evaluate_sum_node(const std::vector<NodePtr>& children) {
     m_memory[var_id].value = memory;
     return sum;
 }
-double SciCalc::evaluate_prod_node(const std::vector<NodePtr>& children) {
+Complex SciCalc::evaluate_prod_node(const std::vector<NodePtr>& children) {
     if (children.size() != 4) return NAN;
-    double prod = 1.0;
+    Complex prod = 1.0;
     int var_id = children[1]->id;
-    int start = (int)(evaluate_node(children[2]) + 0.5);
-    int end = (int)(evaluate_node(children[3]) + 0.5);
-    double memory = m_memory[var_id].value;
+    int start = (int)(evaluate_node(children[2]).real() + 0.5);
+    int end = (int)(evaluate_node(children[3]).real() + 0.5);
+    Complex memory = m_memory[var_id].value;
     for (int i = start; i <= end; i++) {
         m_memory[var_id].value = i;
         prod *= evaluate_node(children[0]);
@@ -95,19 +96,19 @@ double SciCalc::evaluate_prod_node(const std::vector<NodePtr>& children) {
     m_memory[var_id].value = memory;
     return prod;
 }
-double SciCalc::evaluate_int_node(const std::vector<NodePtr>& children) {
+Complex SciCalc::evaluate_int_node(const std::vector<NodePtr>& children) {
     if (children.size() != 4) return NAN;
     int var_id = children[1]->id;
-    double start = evaluate_node(children[2]);
-    double end = evaluate_node(children[3]);
+    double start = evaluate_node(children[2]).real();
+    double end = evaluate_node(children[3]).real();
     int sign = 1;
     if (start > end) {
         std::swap(start, end);
         sign = -1;
     }
     double dx = (end - start) / this->m_integral_N;
-    double ans = 0.0;
-    double memory = m_memory[var_id].value;
+    Complex ans = 0.0;
+    Complex memory = m_memory[var_id].value;
     m_memory[var_id].value = start;
     ans += evaluate_node(children[0]);
     m_memory[var_id].value = end;
@@ -119,16 +120,16 @@ double SciCalc::evaluate_int_node(const std::vector<NodePtr>& children) {
     }
     ans *= dx;
     m_memory[var_id].value = memory;
-    return ans * sign;
+    return ans * (double)sign;
 }
-double SciCalc::evaluate_diff_node(const std::vector<NodePtr>& children) {
+Complex SciCalc::evaluate_diff_node(const std::vector<NodePtr>& children) {
     if (children.size() != 3) return NAN;
     int var_id = children[1]->id;
-    double x = evaluate_node(children[2]);
+    Complex x = evaluate_node(children[2]);
     double eps = std::numeric_limits<double>::epsilon();
     double h = std::sqrt(eps) * std::max(std::abs(x), 1.0);
-    double ans = 0.0;
-    double memory = m_memory[var_id].value;
+    Complex ans = 0.0;
+    Complex memory = m_memory[var_id].value;
     m_memory[var_id].value = x + h;
     ans = evaluate_node(children[0]);
     m_memory[var_id].value = x - h;
@@ -137,15 +138,15 @@ double SciCalc::evaluate_diff_node(const std::vector<NodePtr>& children) {
     m_memory[var_id].value = memory;
     return ans;
 }
-double SciCalc::evaluate_perm_node(const std::vector<NodePtr>& children) {
+Complex SciCalc::evaluate_perm_node(const std::vector<NodePtr>& children) {
     if (children.size() != 2) return NAN;
-    return permutation(evaluate_node(children[0]), evaluate_node(children[1]));
+    return permutation(evaluate_node(children[0]).real(), evaluate_node(children[1]).real());
 }
-double SciCalc::evaluate_comb_node(const std::vector<NodePtr>& children) {
+Complex SciCalc::evaluate_comb_node(const std::vector<NodePtr>& children) {
     if (children.size() != 2) return NAN;
-    return combination(evaluate_node(children[0]), evaluate_node(children[1]));
+    return combination(evaluate_node(children[0]).real(), evaluate_node(children[1]).real());
 }
-double SciCalc::evaluate_log_node(const std::vector<NodePtr>& children) {
+Complex SciCalc::evaluate_log_node(const std::vector<NodePtr>& children) {
     if (children.size() != 2) return NAN;
     return log(evaluate_node(children[1])) / log(evaluate_node(children[0]));
 }

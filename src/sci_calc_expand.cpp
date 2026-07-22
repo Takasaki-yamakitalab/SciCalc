@@ -52,7 +52,7 @@ int SciCalc::expand(NodePtr& node) {
             term->id = OP_MUL;
             term->children = std::move(result[i]);
             optimize_flatten_mul(term);
-            if (!node->children.empty() && term->type == ND_NUM && term->value == 0) continue;
+            if (!node->children.empty() && term->type == ND_NUM && term->value == 0.0) continue;
             node->children.push_back(std::move(term));
         }
         optimize_flatten_add(node);
@@ -154,19 +154,19 @@ int SciCalc::expand_pow(NodePtr& node) {
 
     if (node->children[1]->type != ND_NUM) return 0;
 
-    double n = (int)node->children[1]->value;
+    int n = (int)node->children[1]->value.real();
     if (n > 1) {
         NodePtr nd = std::make_unique<Node>(*node);
-        nd->children[1]->value -= (int)n;
+        nd->children[1]->value -= n;
 
         node->children.erase(node->children.begin() + 1);
         node->type = ND_OPE;
         node->id = OP_MUL;
-        for (int i = 1; i < (int)n; i++) {
+        for (int i = 1; i < n; i++) {
             node->children.push_back(
                 std::make_unique<Node>(*node->children[0]));
         }
-        if (nd->children[1]->value != 0) {
+        if (nd->children[1]->value != 0.0) {
             expand(nd->children[0]);
             node->children.push_back(std::move(nd));
         }

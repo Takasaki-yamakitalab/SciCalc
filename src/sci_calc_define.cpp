@@ -10,14 +10,13 @@ Node::Node(const Node& other)
     }
 }
 
-Node::Node(double val) : type(ND_NUM), value(val) {}
+Node::Node(Complex val) : type(ND_NUM), value(val) {}
 
-Memory::Memory(std::string n, double v) : name(n), value(v) {}
+Memory::Memory(std::string n, Complex v) : name(n), value(v) {}
 
-MathFunc::MathFunc(std::string n, std::function<double(double)> f)
+MathFunc::MathFunc(std::string n, std::function<Complex(Complex)> f)
     : name(n), calc(f) {}
 
-SpecialFunc::SpecialFunc(std::string n, int argc,
-                         std::function<double(const std::vector<NodePtr>&)> f)
+SpecialFunc::SpecialFunc(std::string n, int argc, std::function<Complex(const std::vector<NodePtr>&)> f)
     : name(n), arg_num(argc), calc(f) {}
 }  // namespace sci_calc
