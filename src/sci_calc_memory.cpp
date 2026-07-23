@@ -1,4 +1,5 @@
 #include "SciCalc/sci_calc.hpp"
+#include <algorithm>
 
 namespace sci_calc {
 int SciCalc::set_memory() {
@@ -67,5 +68,19 @@ Complex SciCalc::assign_memory(const std::string& name, Complex val) {
 std::vector<Memory> SciCalc::get_all_memories() { return this->m_memory; }
 void SciCalc::load_memories(const std::vector<Memory>& mems) {
     this->m_memory = mems;
+}
+
+int SciCalc::list_var_id(int id) {
+    for (int i : this->m_var_id_stack) {
+        if (i == id) return 0;
+    }
+    this->m_var_id_stack.push_back(id);
+
+    auto sort_var_id = [&](int& a, int& b) -> bool {
+        return m_memory[a].name < m_memory[b].name;
+    };
+    std::sort(m_var_id_stack.begin(), m_var_id_stack.end(), sort_var_id);
+
+    return 1;
 }
 }  // namespace sci_calc

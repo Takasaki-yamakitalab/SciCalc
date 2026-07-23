@@ -33,6 +33,8 @@ class SciCalc {
     // variables not registered in this list will be expanded to constants
     std::vector<int> m_var_id_stack;
 
+    bool list_all_var = false;
+
     uint32_t m_optimizer = OPTIMIZER_DEFAULT;
 
     NodePtr ast_cash = NULL;
@@ -96,6 +98,7 @@ class SciCalc {
     Complex assign_memory(const std::string& name, Complex val);
     void load_memories(const std::vector<Memory>& mems);
     std::vector<Memory> get_all_memories();
+    int list_var_id(int id);
 
     // sci_calc_special_functions.cpp
     int set_integral_N(int N = DEFAULT_INTEGRAL_N);
@@ -134,9 +137,22 @@ class SciCalc {
     int sort_flatten_add(NodePtr& node);
     int sort_flatten_mul(NodePtr& node);
 
+    // sci_calc_polynomial.cpp
+    Monomial make_monomial(NodePtr& node);
+    Polynomial<Complex> make_polynomial(NodePtr& node);
+    Polynomial<Complex> factorize(Polynomial<Complex> P);
+
     std::vector<Memory>& memories() { return this->m_memory; }
     std::vector<MathFunc>& math_functions() { return this->m_functions; }
     std::vector<SpecialFunc>& special_functions() { return this->m_special_functions; }
 };
+
+Monomial mul(const Monomial& a, const Monomial& b);
+Monomial div(const Monomial& a, const Monomial& b);
+
+Polynomial<Complex> add(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
+Polynomial<Complex> sub(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
+Polynomial<Complex> mul(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
+Polynomial<Complex> div(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
 }  // namespace sci_calc
 #endif

@@ -88,6 +88,7 @@ std::string SciCalc::expand(const std::string& formula) {
     uint32_t opt = m_optimizer;
     m_optimizer &= ~OPTIMIZER_CONST_PROPAGATION;
     m_optimizer &= ~OPTIMIZER_COMBINE_LIKE_TERMS;
+    this->list_all_var = true;
     std::string buff = rm_spaces(formula);
     this->ast_cash = parse(buff);
     NodePtr ans = std::make_unique<Node>(*this->ast_cash);
@@ -99,6 +100,7 @@ std::string SciCalc::expand(const std::string& formula) {
     } while (!is_equal(ans.get(), ans_pre.get()));
 
     m_optimizer = opt;
+    this->list_all_var = false;
     return to_string(ans);
 }
 }  // namespace sci_calc

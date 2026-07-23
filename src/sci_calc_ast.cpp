@@ -102,7 +102,7 @@ NodePtr SciCalc::parse(std::string& left) {
 
     // try to parse with assignment operators
     if ((right = split_by_ope(left, ":=")).size() != 0) {
-        m_var_id_stack.push_back(get_memory_id(left));
+        list_var_id(get_memory_id(left));
         node->type = ND_ASSIGN;
         node->children.push_back(parse(left));
         node->children.push_back(parse(right));
@@ -110,7 +110,7 @@ NodePtr SciCalc::parse(std::string& left) {
         return node;
     }
     if ((right = split_by_ope(left, "=:")).size() != 0) {
-        m_var_id_stack.push_back(get_memory_id(right));
+        list_var_id(get_memory_id(right));
         node->type = ND_ASSIGN;
         node->children.push_back(parse(right));
         node->children.push_back(parse(left));
@@ -171,6 +171,7 @@ NodePtr SciCalc::parse(std::string& left) {
     // variables
     node->type = ND_VAR;
     node->id = get_memory_id(left);
+    if (this->list_all_var) list_var_id(node->id);
     optimize_node(node);
     node->hash = node_hash(node.get());
     return node;
@@ -192,7 +193,7 @@ int SciCalc::parse_special_func_args(std::string& func, NodePtr& node) {
         m_special_functions[node->id].name == "\\prod" ||
         m_special_functions[node->id].name == "\\int" ||
         m_special_functions[node->id].name == "\\diff") {
-        m_var_id_stack.push_back(get_memory_id(args[1]));
+        list_var_id(get_memory_id(args[1]));
     }
     for (int i = 0; i < args.size(); i++) {
         node->children.push_back(parse(args[i]));

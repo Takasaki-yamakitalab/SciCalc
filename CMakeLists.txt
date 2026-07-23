@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 project(SciCalc LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 if(ANDROID)
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
@@ -21,6 +22,7 @@ set(SRC
     src/sci_calc_to_string.cpp
     src/sci_calc_sort.cpp
     src/sci_calc_define.cpp
+    src/sci_calc_polynomial.cpp
     src/sci_calc.cpp)
 
 if(MSVC)
