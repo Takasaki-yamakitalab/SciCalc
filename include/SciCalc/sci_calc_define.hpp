@@ -8,7 +8,6 @@
 #include <functional>
 #include <memory>
 #include <complex>
-#include <map>
 #include <cassert>
 
 namespace sci_calc {
@@ -65,21 +64,6 @@ struct SpecialFunc {
     SpecialFunc(std::string name, int argc, std::function<Complex(const std::vector<NodePtr>&)> f);
 };
 
-struct Monomial {
-    std::vector<int> exp;
-    bool operator<(const Monomial& mono) const {
-        assert(exp.size() == mono.exp.size());
-        for (size_t i = 0; i < exp.size(); i++) {
-            if (exp[i] != mono.exp[i]) return exp[i] > mono.exp[i];
-        }
-        return true;
-    }
-};
-
-template <class Coef>
-struct Polynomial {
-    std::map<Monomial, Coef> terms;
-};
 }  // namespace sci_calc
 
 #endif

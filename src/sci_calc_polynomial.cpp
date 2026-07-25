@@ -1,11 +1,9 @@
 #include <SciCalc/sci_calc.hpp>
-#include "SciCalc/sci_calc_define.hpp"
 
 namespace sci_calc {
 
 Monomial SciCalc::make_monomial(NodePtr& node) {
-    Monomial ret;
-    ret.exp.resize(m_var_id_stack.size(), 0);
+    std::vector<int> ret(m_var_id_stack.size(), 0);
     if (node->type != ND_OPE || node->id != OP_MUL) return ret;
     for (auto& term : node->children) {
         int id = -1;
@@ -21,64 +19,26 @@ Monomial SciCalc::make_monomial(NodePtr& node) {
             continue;
         }
         for (int index = 0; index < m_var_id_stack.size(); index++) {
-            if (m_var_id_stack[index] == id) ret.exp[index] += n;
+            if (m_var_id_stack[index] == id) ret[index] += n;
         }
     }
-    return ret;
+    return Monomial(ret);
 }
 
-Polynomial<Complex> SciCalc::make_polynomial(NodePtr& node) {
-    Polynomial<Complex> ret;
+template <class Coef, class Order>
+Polynomial<Coef, Order> SciCalc::make_polynomial(NodePtr& node) {
+    Polynomial<Coef, Order> ret;
     if (node->type != ND_OPE || node->id != OP_ADD) return ret;
     for (auto& term : node->children) {
-        Complex coeff = 1.0;
+        Coef coeff(1.0);
         if (term->type == ND_NUM)
             coeff = term->value;
         else if (term->type == ND_OPE && term->id == OP_MUL && term->children[0]->type == ND_NUM)
             coeff = term->children[0]->value;
         Monomial mono = make_monomial(term);
-        ret.terms[mono] += coeff;
+        ret.addTerm(mono, coeff);
     }
     return ret;
 }
 
-Monomial mul(const Monomial& a, const Monomial& b) {
-    Monomial ret = a;
-    for (size_t i = 0; i < ret.exp.size(); i++) {
-        ret.exp[i] += b.exp[i];
-    }
-    return ret;
-}
-Monomial div(const Monomial& a, const Monomial& b) {
-    Monomial ret = a;
-    for (size_t i = 0; i < ret.exp.size(); i++) {
-        ret.exp[i] -= b.exp[i];
-    }
-    return ret;
-}
-
-Polynomial<Complex> add(const Polynomial<Complex>& a, const Polynomial<Complex>& b) {
-    Polynomial<Complex> ret = a;
-    for (auto itr = b.terms.begin(); itr != b.terms.end(); itr++) {
-        ret.terms[itr->first] += itr->second;
-    }
-    return ret;
-}
-Polynomial<Complex> sub(const Polynomial<Complex>& a, const Polynomial<Complex>& b) {
-    Polynomial<Complex> ret = a;
-    for (auto itr = b.terms.begin(); itr != b.terms.end(); itr++) {
-        ret.terms[itr->first] -= itr->second;
-    }
-    return ret;
-}
-Polynomial<Complex> mul(const Polynomial<Complex>& a, const Polynomial<Complex>& b) {
-    Polynomial<Complex> ret;
-    for (auto itr1 = a.terms.begin(); itr1 != a.terms.end(); itr1++) {
-        for (auto itr2 = b.terms.begin(); itr2 != b.terms.end(); itr2++) {
-            ret.terms[mul(itr1->first, itr2->first)] += itr1->second * itr2->second;
-        }
-    }
-    return ret;
-}
-Polynomial<Complex> div(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
 }  // namespace sci_calc

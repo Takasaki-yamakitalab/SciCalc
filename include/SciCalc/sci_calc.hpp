@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "sci_calc_define.hpp"
+#include "polynomial.hpp"
 
 namespace sci_calc {
 
@@ -139,20 +140,13 @@ class SciCalc {
 
     // sci_calc_polynomial.cpp
     Monomial make_monomial(NodePtr& node);
-    Polynomial<Complex> make_polynomial(NodePtr& node);
-    Polynomial<Complex> factorize(Polynomial<Complex> P);
+    template <class Coef, class Order>
+    Polynomial<Coef, Order> make_polynomial(NodePtr& node);
 
     std::vector<Memory>& memories() { return this->m_memory; }
     std::vector<MathFunc>& math_functions() { return this->m_functions; }
     std::vector<SpecialFunc>& special_functions() { return this->m_special_functions; }
 };
 
-Monomial mul(const Monomial& a, const Monomial& b);
-Monomial div(const Monomial& a, const Monomial& b);
-
-Polynomial<Complex> add(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
-Polynomial<Complex> sub(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
-Polynomial<Complex> mul(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
-Polynomial<Complex> div(const Polynomial<Complex>& a, const Polynomial<Complex>& b);
 }  // namespace sci_calc
 #endif

@@ -23,6 +23,9 @@ set(SRC
     src/sci_calc_sort.cpp
     src/sci_calc_define.cpp
     src/sci_calc_polynomial.cpp
+    src/monomial.cpp
+    src/polynomial.cpp
+    src/polynomial_order.cpp
     src/sci_calc.cpp)
 
 if(MSVC)
