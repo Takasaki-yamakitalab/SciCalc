@@ -1,13 +1,15 @@
 #include <SciCalc/sci_calc.hpp>
+#include <cstdint>
 
 namespace sci_calc {
 
 Monomial SciCalc::make_monomial(NodePtr& node) {
-    std::vector<int> ret(m_var_id_stack.size(), 0);
+    // std::vector<uint64_t> ret(m_var_id_stack.size(), 0);
+    Monomial ret(m_var_id_stack.size());
     if (node->type != ND_OPE || node->id != OP_MUL) return ret;
     for (auto& term : node->children) {
         int id = -1;
-        int n = 0;
+        uint64_t n = 0;
         if (term->type == ND_VAR) {
             id = term->id;
             n = 1;
@@ -19,10 +21,10 @@ Monomial SciCalc::make_monomial(NodePtr& node) {
             continue;
         }
         for (int index = 0; index < m_var_id_stack.size(); index++) {
-            if (m_var_id_stack[index] == id) ret[index] += n;
+            if (m_var_id_stack[index] == id) ret.add_exp(index, n);
         }
     }
-    return Monomial(ret);
+    return ret;
 }
 
 template <class Coef, class Order>
