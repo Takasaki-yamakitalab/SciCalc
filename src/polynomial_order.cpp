@@ -1,4 +1,3 @@
-#include <SciCalc/sci_calc.hpp>
 #include "SciCalc/polynomial.hpp"
 
 namespace sci_calc {

@@ -5,7 +5,7 @@
 #include <vector>
 #include "sci_calc_define.hpp"
 #include "polynomial.hpp"
-#include "f4mat.hpp"
+#include "f4.hpp"
 
 namespace sci_calc {
 

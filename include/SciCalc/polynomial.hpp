@@ -1,73 +1,13 @@
 #ifndef POLYNOMIAL_HPP
 #define POLYNOMIAL_HPP
 
-#include "sci_calc_define.hpp"
 #include <map>
+#include <memory>
+#include "monomial.hpp"
+#include "monomial_order.hpp"
+#include "term.hpp"
 
 namespace sci_calc {
-
-class Monomial {
-   private:
-    std::vector<int64_t> m_exp;
-    int64_t m_totalDegree;
-
-   public:
-    Monomial(const size_t dim);
-    Monomial(const size_t dim, const int64_t e);
-    Monomial(const std::vector<int64_t>& e);
-    Monomial(const Monomial& other) = default;
-
-    int64_t degree() const;
-    int64_t update_degree();
-    bool isOne() const;
-    bool divides(const Monomial& rhs) const;
-    Monomial operator*(const Monomial& rhs) const;
-    Monomial operator/(const Monomial& rhs) const;
-    Monomial& operator*=(const Monomial& rhs);
-    Monomial& operator/=(const Monomial& rhs);
-    bool operator==(const Monomial& rhs) const;
-    bool operator!=(const Monomial& rhs) const;
-    const int64_t& operator[](size_t i) const;
-
-    const size_t size() const { return m_exp.size(); }
-    const int64_t& totalDegree() const { return m_totalDegree; }
-    const int64_t& exp(size_t index) const {
-        assert(index < m_exp.size());
-        return m_exp[index];
-    }
-    void add_exp(size_t index, int64_t e) {
-        assert(index < m_exp.size());
-        m_exp[index] += e;
-        m_totalDegree += e;
-    }
-    void set_exp(size_t index, int64_t e) {
-        assert(index < m_exp.size());
-        m_totalDegree += e - m_exp[index];
-        m_exp[index] = e;
-    }
-};
-
-struct LexOrder {
-    bool operator()(const Monomial& a, const Monomial& b) const;
-};
-struct GrLexOrder {
-    bool operator()(const Monomial& a, const Monomial& b) const;
-};
-struct GrevLexOrder {
-    bool operator()(const Monomial& a, const Monomial& b) const;
-};
-
-template <class Coef>
-struct Term {
-    Monomial mono;
-    Coef coef;
-
-    bool isZero() const;
-
-    bool operator==(const Term<Coef>& t) const;
-    bool operator!=(const Term<Coef>& t) const;
-    Term<Coef> operator-() const;
-};
 
 template <class Coef, class Order = LexOrder>
 struct Polynomial {
@@ -109,9 +49,6 @@ struct Polynomial {
     Polynomial& operator/=(const Coef& c);
     Polynomial operator-() const;
 };
-using PolyLex = Polynomial<Complex, LexOrder>;
-using PolyGrLex = Polynomial<Complex, GrLexOrder>;
-using PolyGrevLex = Polynomial<Complex, GrevLexOrder>;
 
 template <class Coef, class Order = GrevLexOrder>
 struct DivisionResult {
@@ -149,29 +86,6 @@ struct FactorNode {
     bool isLeaf() const { return !left && !right; }
 };
 
-template <class Coef>
-Coef content(const std::vector<Coef>& c);
-template <class Coef>
-std::complex<Coef> content(const std::vector<std::complex<Coef>>& c);
-
-int64_t permutation(const int64_t& n, const int64_t& r);
-int64_t combination(const int64_t& n, const int64_t& r);
-
-template <class Coef>
-Coef pow(Coef c, int64_t n);
-
-Monomial gcd(const Monomial& a, const Monomial& b);
-Monomial lcm(const Monomial& a, const Monomial& b);
-
-template <class Coef>
-Term<Coef> operator*(const Term<Coef>& a, const Term<Coef>& b);
-template <class Coef>
-Term<Coef> operator/(const Term<Coef>& a, const Term<Coef>& b);
-template <class Coef>
-Term<Coef> operator*(Term<Coef> t, const Coef& c);
-template <class Coef>
-Term<Coef> operator*(const Coef& c, Term<Coef> t);
-
 template <class Coef, class Order>
 Polynomial<Coef, Order> operator+(const Polynomial<Coef, Order>& a, const Polynomial<Coef, Order>& b);
 template <class Coef, class Order>
@@ -188,7 +102,7 @@ Polynomial<Coef, Order> operator*(const Coef& c, Polynomial<Coef, Order> p);
 template <class Coef, class Order>
 Polynomial<Coef, Order> differential(const Polynomial<Coef, Order>& p, int var);
 template <class Coef, class Order>
-DivisionResult<Coef, Order> divide(Polynomial<Coef, Order> F, const std::vector<Polynomial<Coef, Order>>& G);
+DivisionResult<Coef, Order> divide(Polynomial<Coef, Order> f, const std::vector<Polynomial<Coef, Order>>& G);
 template <class Coef, class Order>
 Polynomial<Coef, Order> primitivePart(Polynomial<Coef, Order> p);
 template <class Coef, class Order>
@@ -200,11 +114,14 @@ Polynomial<Coef, Order> substitute(const Polynomial<Coef, Order>& f, int var, co
 template <class Coef, class Order>
 Polynomial<Coef, Order> substitute(Polynomial<Coef, Order> f, const std::vector<Polynomial<Coef, Order>>& g);
 template <class Coef, class Order>
-DivisionResult<Coef, Order> pseudoDivide(Polynomial<Coef, Order> F, const std::vector<Polynomial<Coef, Order>>& G);
+DivisionResult<Coef, Order> pseudoDivide(Polynomial<Coef, Order> f, const Polynomial<Coef, Order>& g);
 template <class Coef, class Order>
-Polynomial<Coef, Order> pseudoRemainder(const Polynomial<Coef, Order>& F, const Polynomial<Coef, Order>& G);
+Polynomial<Coef, Order> pseudoRemainder(const Polynomial<Coef, Order>& f, const Polynomial<Coef, Order>& g);
 template <class Coef, class Order>
-Polynomial<Coef, Order> polynomialGCD(Polynomial<Coef, Order> F, Polynomial<Coef, Order> G);
+Polynomial<Coef, Order> polynomialRemainder(Polynomial<Coef, Order> f, const Polynomial<Coef, Order>& g);
+
+template <class Coef, class Order>
+Polynomial<Coef, Order> polynomialGCD(Polynomial<Coef, Order> f, Polynomial<Coef, Order> g);
 
 template <class Coef, class Order>
 Polynomial<Coef, Order> sPolynomial(const Polynomial<Coef, Order>& f, const Polynomial<Coef, Order>& g);

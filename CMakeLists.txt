@@ -26,7 +26,8 @@ set(SRC
     src/monomial.cpp
     src/polynomial.cpp
     src/polynomial_order.cpp
-    src/f4mat.cpp
+    src/f4.cpp
+    src/term.cpp
     src/sci_calc.cpp)
 
 if(MSVC)

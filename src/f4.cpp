@@ -1,7 +1,5 @@
 #include "SciCalc/f4mat.hpp"
-#include <SciCalc/sci_calc.hpp>
 #include <set>
-#include "SciCalc/polynomial.hpp"
 #include <deque>
 #include <utility>
 

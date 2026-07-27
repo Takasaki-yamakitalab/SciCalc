@@ -1,5 +1,5 @@
-#ifndef F4MAT_HPP
-#define F4MAT_HPP
+#ifndef F4_HPP
+#define F4_HPP
 
 #include "polynomial.hpp"
 
@@ -40,6 +40,7 @@ std::vector<SparseRow<Coef>> reduceTargets(F4Matrix<Coef, Order>& M);
 
 template <class Coef, class Order>
 std::vector<Polynomial<Coef, Order>> f4ReduceBatch(const std::vector<Polynomial<Coef, Order>>& G, const std::vector<Polynomial<Coef, Order>>& S);
+
 }  // namespace sci_calc
 
 #endif

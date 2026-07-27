@@ -1,9 +1,11 @@
-#include <SciCalc/sci_calc.hpp>
 #include <cstdint>
 #include <cstdio>
 #include <deque>
 #include <memory>
 #include <random>
+#include <type_traits>
+#include "SciCalc/coefficient_traits.hpp"
+#include "SciCalc/polynomial.hpp"
 
 namespace sci_calc {
 
@@ -238,90 +240,120 @@ Polynomial<Coef, Order> differential(const Polynomial<Coef, Order>& p, int var) 
 }
 
 template <class Coef, class Order>
-DivisionResult<Coef, Order> divide(Polynomial<Coef, Order> F, const std::vector<Polynomial<Coef, Order>>& G) {
+DivisionResult<Coef, Order> divide(Polynomial<Coef, Order> f, const std::vector<Polynomial<Coef, Order>>& G) {
     std::vector<Polynomial<Coef, Order>> Q(G.size());
     Polynomial<Coef, Order> R;
 
-    while (!F.isZero()) {
+    while (!f.isZero()) {
         bool reduced = false;
         for (size_t i = 0; i < G.size(); i++) {
             if (G[i].isZero()) continue;
-            if (!F.reducibleBy(G[i])) continue;
+            if (!f.reducibleBy(G[i])) continue;
 
-            Q[i] += F.leadingTerm() / G[i].leadingTerm();
-            F.reduceOnceBy(G[i]);
+            Q[i] += f.leadingTerm() / G[i].leadingTerm();
+            f.reduceOnceBy(G[i]);
             reduced = true;
             break;
         }
         if (!reduced) {
-            R += F.leadingTerm();
-            F.eraseLeadingTerm();
+            R += f.leadingTerm();
+            f.eraseLeadingTerm();
         }
     }
     return {Q, R};
 }
 template <class Coef, class Order>
-Polynomial<Coef, Order> primitivePart(Polynomial<Coef, Order> p) {
+Polynomial<Coef, Order> primitivePartImpl(Polynomial<Coef, Order> p, std::true_type) {
+    // 体系数
     if (p.isZero()) return p;
-
-    Coef c = content(p);
-
-    if (c != Coef(1)) p /= c;
-
+    p /= p.leadingCoefficient();
     return p;
 }
 template <class Coef, class Order>
-DivisionResult<Coef, Order> pseudoDivide(Polynomial<Coef, Order> F, const std::vector<Polynomial<Coef, Order>>& G) {
+Polynomial<Coef, Order> primitivePartImpl(Polynomial<Coef, Order> p, std::false_type) {
+    // 整数係数
+    if (p.isZero()) return p;
+    Coef c = content(p);
+    if (c != Coef(1)) p /= c;
+    return p;
+}
+template <class Coef, class Order>
+Polynomial<Coef, Order> primitivePart(Polynomial<Coef, Order> p) {
+    return primitivePartImpl(p, std::integral_constant<bool, coefficient_traits<Coef>::is_field>());
+}
+template <class Coef, class Order>
+DivisionResult<Coef, Order> pseudoDivide(Polynomial<Coef, Order> f, const Polynomial<Coef, Order>& g) {
     using Poly = Polynomial<Coef, Order>;
     DivisionResult<Coef, Order> ret;
-    assert(!G.isZero());
+    assert(!g.isZero());
 
-    Poly R = F;
+    Poly R = f;
     Poly Q;
 
-    int m = F.degree();
-    int n = G.degree();
+    int64_t m = f.degree();
+    int64_t n = g.degree();
 
     if (m < n) {
-        ret.R = F;
+        ret.R = f;
         ret.Q.push_back(Q);
         return ret;
     }
 
-    Coef c = G.leadingCoefficient();
-    while (!R.isZero() && R.degree() >= G.degree()) {
-        Monomial u = R.leadingMonomial() / G.leadingMonomial();
+    Coef c = g.leadingCoefficient();
+    while (!R.isZero() && R.degree() >= g.degree()) {
+        Monomial u = R.leadingMonomial() / g.leadingMonomial();
         Coef a = R.leadingCoefficient();
         Term<Coef> t{u, a};
         Q *= c;
         Q += t;
         R *= c;
-        R -= G * t;
+        R -= g * t;
     }
     ret.Q.push_back(Q);
     ret.R = R;
     return ret;
 }
 template <class Coef, class Order>
-Polynomial<Coef, Order> pseudoRemainder(const Polynomial<Coef, Order>& F, const Polynomial<Coef, Order>& G) {
-    return pseudoDivide(F, G).R;
+Polynomial<Coef, Order> pseudoRemainder(const Polynomial<Coef, Order>& f, const Polynomial<Coef, Order>& g) {
+    return pseudoDivide(f, g).R;
 }
 template <class Coef, class Order>
-Polynomial<Coef, Order> polynomialGCD(Polynomial<Coef, Order> F, Polynomial<Coef, Order> G) {
-    using Poly = Polynomial<Coef, Order>;
-
-    if (F.isZero()) return G;
-    if (G.isZero()) return F;
-
-    while (!G.isZero()) {
-        Poly R = pseudoRemainder(F, G);
-        R = primitivePart(R);
-        F = G;
-        G = R;
+Polynomial<Coef, Order> polynomialRemainder(Polynomial<Coef, Order> f, const Polynomial<Coef, Order>& g) {
+    assert(!g.isZero());
+    while (!f.isZero()) {
+        if (!f.reducibleBy(g)) break;
+        f.reduceOnceBy(g);
     }
-    if (!F.isZero()) F *= Coef(1) / F.leadingCoefficient();
-
-    return primitivePart(F);
+    return f;
+}
+template <class Coef, class Order>
+Polynomial<Coef, Order> polynomialGCDImpl(Polynomial<Coef, Order> f, Polynomial<Coef, Order> g, std::true_type) {
+    // 体係数
+    using Poly = Polynomial<Coef, Order>;
+    while (!g.isZero()) {
+        Poly r = polynomialRemainder(f, g);
+        f = g;
+        g = r;
+    }
+    if (!f.isZero()) f *= Coef(1) / f.leadingCoefficient();
+    return f;
+}
+template <class Coef, class Order>
+Polynomial<Coef, Order> polynomialGCDImpl(Polynomial<Coef, Order> f, Polynomial<Coef, Order> g, std::false_type) {
+    // 整数係数
+    using Poly = Polynomial<Coef, Order>;
+    while (!g.isZero()) {
+        Poly r = primitivePart(pseudoRemainder(f, g));
+        f = g;
+        g = r;
+    }
+    return primitivePart(f);
+}
+template <class Coef, class Order>
+Polynomial<Coef, Order> polynomialGCD(Polynomial<Coef, Order> f, Polynomial<Coef, Order> g) {
+    if (f.isZero()) return g;
+    if (g.isZero()) return f;
+    return polynomialGCDImpl(f, g, std::integral_constant<bool, coefficient_traits<Coef>::is_field>());
 }
 template <class Coef, class Order>
 Polynomial<Coef, Order> pow(Polynomial<Coef, Order> p, int64_t e) {
