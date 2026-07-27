@@ -1,9 +1,10 @@
 # SciCalc
 
-簡易的な数式処理エンジン
+~~簡易的な~~数式処理エンジン
 
 - std::string型の文字列を数式として解釈し、計算する
-- C++標準ライブラリのみ使用
+- ~~C++標準ライブラリのみ使用~~
+    - 多項式関係の処理が大きくなったので Polynomial として分離
 - 変数を利用可能
     - 変数への代入
     - 変数を用いた数値計算
@@ -63,6 +64,10 @@ cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=~/Android/Sdk/ndk/25.0.0/build/cmake/an
 cmake --build .
 cmake --install . --prefix /usr/local/android/x86
 ```
+
+# Dependencies
+
+- Polynomial
 
 # Description
 

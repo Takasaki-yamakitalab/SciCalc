@@ -11,6 +11,8 @@ if(ANDROID)
     set(CMAKE_ANDROID_STL_TYPE c++_static)
 endif()
 
+find_package(Polynomial CONFIG REQUIRED)
+
 set(SRC
     src/sci_calc_ast.cpp
     src/sci_calc_csv.cpp
@@ -23,11 +25,6 @@ set(SRC
     src/sci_calc_sort.cpp
     src/sci_calc_define.cpp
     src/sci_calc_polynomial.cpp
-    src/monomial.cpp
-    src/polynomial.cpp
-    src/polynomial_order.cpp
-    src/f4.cpp
-    src/term.cpp
     src/sci_calc.cpp)
 
 if(MSVC)
@@ -46,6 +43,9 @@ target_include_directories(${PROJECT_NAME} BEFORE PUBLIC
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    Polynomial::Polynomial
 )
 
 include(GNUInstallDirs)
@@ -68,6 +68,8 @@ include(CMakePackageConfigHelpers)
 file(WRITE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake.in
     "
 @PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(Polynomial CONFIG REQUIRED)
 include(\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Targets.cmake)
     "
 )

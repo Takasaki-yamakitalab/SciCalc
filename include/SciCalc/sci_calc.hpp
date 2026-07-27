@@ -3,9 +3,9 @@
 
 #include <string>
 #include <vector>
+#include <Polynomial/polynomial.hpp>
+#include <Polynomial/f4.hpp>
 #include "sci_calc_define.hpp"
-#include "polynomial.hpp"
-#include "f4.hpp"
 
 namespace sci_calc {
 
@@ -140,9 +140,9 @@ class SciCalc {
     int sort_flatten_mul(NodePtr& node);
 
     // sci_calc_polynomial.cpp
-    Monomial make_monomial(NodePtr& node);
+    polynomial::Monomial make_monomial(NodePtr& node);
     template <class Coef, class Order>
-    Polynomial<Coef, Order> make_polynomial(NodePtr& node);
+    polynomial::Polynomial<Coef, Order> make_polynomial(NodePtr& node);
 
     std::vector<Memory>& memories() { return this->m_memory; }
     std::vector<MathFunc>& math_functions() { return this->m_functions; }

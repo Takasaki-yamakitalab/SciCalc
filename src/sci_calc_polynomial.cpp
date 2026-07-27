@@ -3,9 +3,8 @@
 
 namespace sci_calc {
 
-Monomial SciCalc::make_monomial(NodePtr& node) {
-    // std::vector<uint64_t> ret(m_var_id_stack.size(), 0);
-    Monomial ret(m_var_id_stack.size());
+polynomial::Monomial SciCalc::make_monomial(NodePtr& node) {
+    polynomial::Monomial ret(m_var_id_stack.size());
     if (node->type != ND_OPE || node->id != OP_MUL) return ret;
     for (auto& term : node->children) {
         int id = -1;
@@ -28,8 +27,8 @@ Monomial SciCalc::make_monomial(NodePtr& node) {
 }
 
 template <class Coef, class Order>
-Polynomial<Coef, Order> SciCalc::make_polynomial(NodePtr& node) {
-    Polynomial<Coef, Order> ret;
+polynomial::Polynomial<Coef, Order> SciCalc::make_polynomial(NodePtr& node) {
+    polynomial::Polynomial<Coef, Order> ret;
     if (node->type != ND_OPE || node->id != OP_ADD) return ret;
     for (auto& term : node->children) {
         Coef coeff(1.0);
@@ -37,7 +36,7 @@ Polynomial<Coef, Order> SciCalc::make_polynomial(NodePtr& node) {
             coeff = term->value;
         else if (term->type == ND_OPE && term->id == OP_MUL && term->children[0]->type == ND_NUM)
             coeff = term->children[0]->value;
-        Monomial mono = make_monomial(term);
+        polynomial::Monomial mono = make_monomial(term);
         ret.addTerm(mono, coeff);
     }
     return ret;
