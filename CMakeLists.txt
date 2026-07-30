@@ -83,4 +83,5 @@ install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/
 if(NOT ANDROID)
     add_subdirectory(example)
     add_subdirectory(example2)
+    add_subdirectory(example3)
 endif()

@@ -93,11 +93,29 @@ std::string SciCalc::expand(const std::string& formula) {
     this->ast_cash = parse(buff);
     NodePtr ans = std::make_unique<Node>(*this->ast_cash);
 
-    NodePtr ans_pre;
-    do {
-        ans_pre = std::make_unique<Node>(*ans);
-        expand(ans);
-    } while (!is_equal(ans.get(), ans_pre.get()));
+    // NodePtr ans_pre;
+    // do {
+    //     ans_pre = std::make_unique<Node>(*ans);
+    //     expand(ans);
+    // } while (!is_equal(ans.get(), ans_pre.get()));
+    expandPoly(ans);
+
+    m_optimizer = opt;
+    this->list_all_var = false;
+    return to_string(ans);
+}
+
+std::string SciCalc::factorize(const std::string& formula) {
+    m_var_id_stack.clear();
+    uint32_t opt = m_optimizer;
+    m_optimizer &= ~OPTIMIZER_CONST_PROPAGATION;
+    m_optimizer &= ~OPTIMIZER_COMBINE_LIKE_TERMS;
+    this->list_all_var = true;
+    std::string buff = rm_spaces(formula);
+    this->ast_cash = parse(buff);
+    if (this->m_var_id_stack.size() > 1) return "Only single-variable";
+    NodePtr ans = std::make_unique<Node>(*this->ast_cash);
+    factorPoly(ans);
 
     m_optimizer = opt;
     this->list_all_var = false;
