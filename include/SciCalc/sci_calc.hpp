@@ -1,8 +1,10 @@
 #ifndef SCI_CALC_HPP
 #define SCI_CALC_HPP
 
+#include <Polynomial/monomial_order.hpp>
 #include <string>
 #include <vector>
+#include <Polynomial/polynomial.hpp>
 #include "sci_calc_define.hpp"
 
 namespace sci_calc {
@@ -33,6 +35,8 @@ class SciCalc {
     // variables not registered in this list will be expanded to constants
     std::vector<int> m_var_id_stack;
 
+    bool list_all_var = false;
+
     uint32_t m_optimizer = OPTIMIZER_DEFAULT;
 
     NodePtr ast_cash = NULL;
@@ -48,6 +52,7 @@ class SciCalc {
     std::string rm_spaces(const std::string& src);
     Complex calc(const std::string& formula);
     std::string expand(const std::string& formula);
+    std::string factorize(const std::string& formula);
 
     // sci_calc_ast.cpp
     int is_bracket(char c);
@@ -96,6 +101,7 @@ class SciCalc {
     Complex assign_memory(const std::string& name, Complex val);
     void load_memories(const std::vector<Memory>& mems);
     std::vector<Memory> get_all_memories();
+    int list_var_id(int id);
 
     // sci_calc_special_functions.cpp
     int set_integral_N(int N = DEFAULT_INTEGRAL_N);
@@ -134,9 +140,18 @@ class SciCalc {
     int sort_flatten_add(NodePtr& node);
     int sort_flatten_mul(NodePtr& node);
 
+    // sci_calc_polynomial.cpp
+    polynomial::Monomial make_monomial(const NodePtr& node);
+    polynomial::Polynomial<int, polynomial::LexOrder> make_polynomial(const NodePtr& node);
+    NodePtr poly2node(const polynomial::Polynomial<int, polynomial::LexOrder>& poly);
+    void mono2node(NodePtr& dst, const polynomial::Monomial& mono);
+    polynomial::Polynomial<int> expandPoly(NodePtr& node);
+    int factorPoly(NodePtr& node);
+
     std::vector<Memory>& memories() { return this->m_memory; }
     std::vector<MathFunc>& math_functions() { return this->m_functions; }
     std::vector<SpecialFunc>& special_functions() { return this->m_special_functions; }
 };
+
 }  // namespace sci_calc
 #endif

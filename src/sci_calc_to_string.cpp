@@ -114,23 +114,47 @@ std::string SciCalc::to_string_g(const double value, const int precision) {
     return std::string(buf);
 }
 std::string SciCalc::to_string_g(const Complex value, const int precision) {
-    if (value.imag() == 0.0 || std::isnan(value.real()) || std::isnan(value.imag())) return to_string_g(value.real(), precision);
-
     const double PI = std::atan(1.0) * 4.0;
     double arg = std::abs(std::arg(value));
-    if (arg < 1e-15 || PI - 1e-15 < arg) return to_string_g(value.real(), precision);
 
-    std::string ret;
-    if (arg < PI / 2 - 1e-15 || PI / 2 + 1e-15 < arg) ret = to_string_g(value.real(), precision / 2);
-    std::string imag = to_string_g(value.imag(), precision / 2);
-    if (imag[0] == '-') {
-        ret += "-i";
-        imag = imag.substr(1);
+    bool only_real = false;
+
+    std::string real;
+    if (value.imag() == 0.0 || std::isnan(value.real()) || std::isnan(value.imag())) only_real = true;
+    if (arg < 1e-15 || PI - 1e-15 < arg) only_real = true;
+    if (arg < PI / 2 - 1e-15 || PI / 2 + 1e-15 < arg) real = to_string_g(value.real(), only_real ? precision : precision / 2);
+
+    size_t index = real.find("e");
+    if (index != std::string::npos) {
+        if (real[index + 1] == '+') real.replace(index, 2, "*10^");
+        else {
+            real.replace(index, 1, "*10^(");
+            real += ")";
+        }
     }
-    else if (!ret.empty()) ret += "+i";
-    else ret = "i";
-    if (value.imag() != 1.0) ret += imag;
-    return ret;
+    if (only_real) return real;
+    if (value.imag() == 1.0) {
+        if (real.empty()) return "i";
+        return real + "+i";
+    }
+    if (value.imag() == -1.0) return real + "-i";
+
+    std::string imag = to_string_g(value.imag(), precision / 2);
+    index = imag.find("e");
+    if (index == std::string::npos){
+        imag += "i";
+    }
+    else {
+        if (imag[index + 1] == '+') imag.replace(index, 2, "*10^");
+        else {
+            imag.replace(index, 1, "*10^(");
+            imag += ")";
+        }
+        imag.insert(index, "i");
+    }
+    if (!real.empty() && real.length() + imag.length() > precision) real += "\n";
+    if (value.imag() > 0) return real + "+" + imag;
+    return real + imag;
 }
 
 std::string SciCalc::to_string_debug(const NodePtr& node) {

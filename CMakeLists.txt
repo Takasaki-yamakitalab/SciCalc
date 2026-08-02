@@ -1,14 +1,17 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 project(SciCalc LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 if(ANDROID)
     set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
     set(CMAKE_ANDROID_STL_TYPE c++_static)
 endif()
+
+find_package(Polynomial CONFIG REQUIRED)
 
 set(SRC
     src/sci_calc_ast.cpp
@@ -21,6 +24,7 @@ set(SRC
     src/sci_calc_to_string.cpp
     src/sci_calc_sort.cpp
     src/sci_calc_define.cpp
+    src/sci_calc_polynomial.cpp
     src/sci_calc.cpp)
 
 if(MSVC)
@@ -39,6 +43,9 @@ target_include_directories(${PROJECT_NAME} BEFORE PUBLIC
 )
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    Polynomial::Polynomial
 )
 
 include(GNUInstallDirs)
@@ -61,6 +68,8 @@ include(CMakePackageConfigHelpers)
 file(WRITE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake.in
     "
 @PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(Polynomial CONFIG REQUIRED)
 include(\${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Targets.cmake)
     "
 )
@@ -74,4 +83,5 @@ install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake DESTINATION lib/
 if(NOT ANDROID)
     add_subdirectory(example)
     add_subdirectory(example2)
+    add_subdirectory(example3)
 endif()

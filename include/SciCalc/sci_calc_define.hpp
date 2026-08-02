@@ -8,25 +8,11 @@
 #include <functional>
 #include <memory>
 #include <complex>
+#include <cassert>
 
 namespace sci_calc {
-enum OPE_TYPE {
-    OP_ADD,
-    OP_SUB,
-    OP_MUL,
-    OP_DIV,
-    OP_POW,
-    OP_END
-};
-enum NODE_TYPE {
-    ND_NUM,
-    ND_OPE,
-    ND_VAR,
-    ND_MATH_FUNC,
-    ND_SPECIAL_FUNC,
-    ND_ASSIGN,
-    ND_END
-};
+enum OPE_TYPE { OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_POW, OP_END };
+enum NODE_TYPE { ND_NUM, ND_OPE, ND_VAR, ND_MATH_FUNC, ND_SPECIAL_FUNC, ND_ASSIGN, ND_END };
 
 const char OP_LIST[OP_END][2] = {"+", "-", "*", "/", "^"};
 constexpr int DEFAULT_INTEGRAL_N = 0x100000;
@@ -39,7 +25,8 @@ constexpr uint32_t OPTIMIZER_COMBINE_LIKE_TERMS = 1 << 3;
 
 constexpr uint32_t OPTIMIZER_ALL = 0xFFFFFFFF;
 
-constexpr uint32_t OPTIMIZER_DEFAULT = OPTIMIZER_CONST_FOLDING + OPTIMIZER_CONST_PROPAGATION + OPTIMIZER_ALGEBRAIC_SIMPLIFICATION + OPTIMIZER_COMBINE_LIKE_TERMS;
+constexpr uint32_t OPTIMIZER_DEFAULT = OPTIMIZER_CONST_FOLDING + OPTIMIZER_CONST_PROPAGATION +
+                                       OPTIMIZER_ALGEBRAIC_SIMPLIFICATION + OPTIMIZER_COMBINE_LIKE_TERMS;
 
 using Complex = std::complex<double>;
 
