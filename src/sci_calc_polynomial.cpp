@@ -125,7 +125,7 @@ void SciCalc::mono2node(NodePtr& dst, const polynomial::Monomial& m) {
         nd->type = ND_OPE;
         nd->id = OP_POW;
         nd->children.push_back(std::make_unique<Node>(var));
-        nd->children.push_back(std::make_unique<Node>(Complex(m[i])));
+        nd->children.push_back(std::make_unique<Node>(Complex((double)m[i])));
         dst->children.push_back(std::move(nd));
     }
 }
@@ -197,7 +197,7 @@ int SciCalc::factorPoly(NodePtr& node) {
         nd->type = ND_OPE;
         nd->id = OP_POW;
         nd->children.push_back(poly2node(fact.first));
-        nd->children.push_back(std::make_unique<Node>(Complex(fact.second)));
+        nd->children.push_back(std::make_unique<Node>(Complex((double)fact.second)));
         node->children.push_back(std::move(nd));
     }
     return 0;

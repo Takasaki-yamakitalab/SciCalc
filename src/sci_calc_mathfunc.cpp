@@ -67,12 +67,12 @@ int SciCalc::detect_func(const std::string& func) {
     for (id = 0; id < m_functions.size(); id++) {
         if (func.find(m_functions[id].name) == 0) return id;
     }
-    return m_functions.size() - 1;
+    return (int)m_functions.size() - 1;
 }
 
 std::string SciCalc::rm_func_name(std::string& func) {
     int id = detect_func(func);
-    int nameLen = m_functions[id].name.size();
+    size_t nameLen = m_functions[id].name.size();
     if (nameLen == 0) return func.erase(0);
     return func.erase(0, nameLen);
 }
