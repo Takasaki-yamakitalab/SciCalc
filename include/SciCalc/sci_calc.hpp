@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 #include <Polynomial/polynomial.hpp>
-#include <Polynomial/f4.hpp>
 #include "sci_calc_define.hpp"
 
 namespace sci_calc {

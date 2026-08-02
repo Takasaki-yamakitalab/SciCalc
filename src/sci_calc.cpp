@@ -113,7 +113,6 @@ std::string SciCalc::factorize(const std::string& formula) {
     this->list_all_var = true;
     std::string buff = rm_spaces(formula);
     this->ast_cash = parse(buff);
-    if (this->m_var_id_stack.size() > 1) return "Only single-variable";
     NodePtr ans = std::make_unique<Node>(*this->ast_cash);
     factorPoly(ans);
 
