@@ -28,7 +28,8 @@ constexpr uint32_t OPTIMIZER_ALL = 0xFFFFFFFF;
 constexpr uint32_t OPTIMIZER_DEFAULT = OPTIMIZER_CONST_FOLDING + OPTIMIZER_CONST_PROPAGATION +
                                        OPTIMIZER_ALGEBRAIC_SIMPLIFICATION + OPTIMIZER_COMBINE_LIKE_TERMS;
 
-using Complex = std::complex<double>;
+using Real = double;
+using Complex = std::complex<Real>;
 
 struct Node {
     size_t hash;

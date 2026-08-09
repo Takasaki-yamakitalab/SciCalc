@@ -37,8 +37,8 @@ polynomial::Monomial SciCalc::make_monomial(const NodePtr& node) {
     return ret;
 }
 
-polynomial::Polynomial<int, polynomial::LexOrder> SciCalc::make_polynomial(const NodePtr& node) {
-    using Poly = polynomial::Polynomial<int, polynomial::LexOrder>;
+polynomial::Polynomial<int64_t, polynomial::LexOrder> SciCalc::make_polynomial(const NodePtr& node) {
+    using Poly = polynomial::Polynomial<int64_t, polynomial::LexOrder>;
     polynomial::Monomial mono(this->m_var_id_stack.size());
 
     if (node->type != ND_NUM && node->type != ND_OPE && node->type != ND_VAR) return Poly();
@@ -81,10 +81,10 @@ polynomial::Polynomial<int, polynomial::LexOrder> SciCalc::make_polynomial(const
     return Poly();
 }
 
-NodePtr SciCalc::poly2node(const polynomial::Polynomial<int, polynomial::LexOrder>& poly) {
-    using Poly = polynomial::Polynomial<int, polynomial::LexOrder>;
+NodePtr SciCalc::poly2node(const polynomial::Polynomial<int64_t, polynomial::LexOrder>& poly) {
+    using Poly = polynomial::Polynomial<int64_t, polynomial::LexOrder>;
 
-    polynomial::Polynomial<int, polynomial::LexOrder> f;
+    Poly f;
     for (auto it = poly.terms.begin(); it != poly.terms.end(); it++) {
         f.addTerm(it->first, it->second);
     }
@@ -92,14 +92,14 @@ NodePtr SciCalc::poly2node(const polynomial::Polynomial<int, polynomial::LexOrde
     NodePtr ret = std::make_unique<Node>();
     if (f.terms.size() == 0) return std::make_unique<Node>(Complex(0));
     if (f.isConstant()) {
-        return std::make_unique<Node>(Complex(f.terms.begin()->second));
+        return std::make_unique<Node>(Complex((Real)f.terms.begin()->second));
     }
     if (f.isMonomial()) {
         ret->type = ND_OPE;
         ret->id = OP_MUL;
         auto& m = f.terms.begin()->first;
         auto& c = f.terms.begin()->second;
-        if (c != 1) ret->children.push_back(std::make_unique<Node>(Complex(c)));
+        if (c != 1) ret->children.push_back(std::make_unique<Node>(Complex((Real)c)));
         mono2node(ret, m);
         return ret;
     }
@@ -130,8 +130,8 @@ void SciCalc::mono2node(NodePtr& dst, const polynomial::Monomial& m) {
     }
 }
 
-polynomial::Polynomial<int> SciCalc::expandPoly(NodePtr& node) {
-    using Poly = polynomial::Polynomial<int, polynomial::LexOrder>;
+polynomial::Polynomial<int64_t> SciCalc::expandPoly(NodePtr& node) {
+    using Poly = polynomial::Polynomial<int64_t, polynomial::LexOrder>;
     polynomial::Monomial mono(this->m_var_id_stack.size());
 
     if (node->type == ND_MATH_FUNC || node->type == ND_SPECIAL_FUNC) {

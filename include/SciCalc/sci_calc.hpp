@@ -142,10 +142,10 @@ class SciCalc {
 
     // sci_calc_polynomial.cpp
     polynomial::Monomial make_monomial(const NodePtr& node);
-    polynomial::Polynomial<int, polynomial::LexOrder> make_polynomial(const NodePtr& node);
-    NodePtr poly2node(const polynomial::Polynomial<int, polynomial::LexOrder>& poly);
+    polynomial::Polynomial<int64_t, polynomial::LexOrder> make_polynomial(const NodePtr& node);
+    NodePtr poly2node(const polynomial::Polynomial<int64_t, polynomial::LexOrder>& poly);
     void mono2node(NodePtr& dst, const polynomial::Monomial& mono);
-    polynomial::Polynomial<int> expandPoly(NodePtr& node);
+    polynomial::Polynomial<int64_t> expandPoly(NodePtr& node);
     int factorPoly(NodePtr& node);
 
     std::vector<Memory>& memories() { return this->m_memory; }
