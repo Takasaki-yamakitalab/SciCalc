@@ -1,4 +1,5 @@
 #include "SciCalc/sci_calc_define.hpp"
+#include <memory>
 
 namespace sci_calc {
 Node::Node() {}
@@ -17,6 +18,10 @@ Memory::Memory(std::string n, Complex v) : name(n), value(v) {}
 MathFunc::MathFunc(std::string n, std::function<Complex(Complex)> f)
     : name(n), calc(f) {}
 
-SpecialFunc::SpecialFunc(std::string n, int argc, std::function<Complex(const std::vector<NodePtr>&)> f)
-    : name(n), arg_num(argc), calc(f) {}
+SpecialFunc::SpecialFunc(std::string n, int argc, const std::vector<int>& index, std::function<Complex(const std::vector<NodePtr>&)> f)
+    : name(n), arg_num(argc), var_index(index), calc(f) {}
+
+OriginalFunc::OriginalFunc(const std::string& n, const std::vector<int>& var_index, const NodePtr& node) : name(n), var_id(var_index) {
+    content = std::make_unique<Node>(*node);
+}
 }  // namespace sci_calc

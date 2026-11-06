@@ -3,6 +3,7 @@
 
 #include <Polynomial/monomial_order.hpp>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include <Polynomial/polynomial.hpp>
 #include "sci_calc_define.hpp"
@@ -25,6 +26,10 @@ class SciCalc {
     // list of the special functions
     // sort by longest name first
     std::vector<SpecialFunc> m_special_functions;
+
+    // list for user's original functions
+    // key: function's id (index within m_memory)
+    std::unordered_map<int, OriginalFunc> m_original_functions;
 
     bool is_debug;
 
@@ -117,6 +122,9 @@ class SciCalc {
     Complex evaluate_perm_node(const std::vector<NodePtr>& children);
     Complex evaluate_comb_node(const std::vector<NodePtr>& children);
     Complex evaluate_log_node(const std::vector<NodePtr>& children);
+    Complex evaluate_defunc_node(const std::vector<NodePtr>& children);
+    Complex evaluate_cfunc_node(const std::vector<NodePtr>& children);
+    Complex evaluate_abs_node(const std::vector<NodePtr>& children);
 
     // sci_calc_expand.cpp
     int expand(NodePtr& node);

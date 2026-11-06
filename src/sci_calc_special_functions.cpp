@@ -12,16 +12,20 @@ int SciCalc::set_special_func_list() {
     // special functions
     // sort by longest name first
     // all special function names begin with '\\'
-    m_special_functions.emplace_back("\\prod", 4, [&](const std::vector<NodePtr>& children) { return evaluate_prod_node(children); });
-    m_special_functions.emplace_back("\\diff", 3, [&](const std::vector<NodePtr>& children) { return evaluate_diff_node(children); });
-    m_special_functions.emplace_back("\\perm", 2, [&](const std::vector<NodePtr>& children) { return evaluate_perm_node(children); });
-    m_special_functions.emplace_back("\\comb", 2, [&](const std::vector<NodePtr>& children) { return evaluate_comb_node(children); });
-    m_special_functions.emplace_back("\\sum", 4, [&](const std::vector<NodePtr>& children) { return evaluate_sum_node(children); });
-    m_special_functions.emplace_back("\\int", 4, [&](const std::vector<NodePtr>& children) { return evaluate_int_node(children); });
-    m_special_functions.emplace_back("\\log", 2, [&](const std::vector<NodePtr>& children) { return evaluate_log_node(children); });
+    // the content of var_id represents the index within the '{}' structure used to store variables.
+    m_special_functions.emplace_back("\\defunc", -1, std::vector<int>{ -1, 0, -1 }, [&](const std::vector<NodePtr>& children) { return evaluate_defunc_node(children); });
+    m_special_functions.emplace_back("\\cfunc", -1, std::vector<int>{ -1, 0 }, [&](const std::vector<NodePtr>& children) { return evaluate_cfunc_node(children); });
+    m_special_functions.emplace_back("\\prod", 4, std::vector<int>{ 1 }, [&](const std::vector<NodePtr>& children) { return evaluate_prod_node(children); });
+    m_special_functions.emplace_back("\\diff", 3, std::vector<int>{ 1 }, [&](const std::vector<NodePtr>& children) { return evaluate_diff_node(children); });
+    m_special_functions.emplace_back("\\perm", 2, std::vector<int>{}, [&](const std::vector<NodePtr>& children) { return evaluate_perm_node(children); });
+    m_special_functions.emplace_back("\\comb", 2, std::vector<int>{}, [&](const std::vector<NodePtr>& children) { return evaluate_comb_node(children); });
+    m_special_functions.emplace_back("\\sum", 4, std::vector<int>{ 1 }, [&](const std::vector<NodePtr>& children) { return evaluate_sum_node(children); });
+    m_special_functions.emplace_back("\\int", 4, std::vector<int>{ 1 }, [&](const std::vector<NodePtr>& children) { return evaluate_int_node(children); });
+    m_special_functions.emplace_back("\\log", 2, std::vector<int>{}, [&](const std::vector<NodePtr>& children) { return evaluate_log_node(children); });
+    m_special_functions.emplace_back("\\abs", 1, std::vector<int>{}, [&](const std::vector<NodePtr>& children) { return evaluate_abs_node(children); });
 
     // error
-    m_special_functions.emplace_back("", 4, [](const std::vector<NodePtr>& children) {
+    m_special_functions.emplace_back("", 4, std::vector<int>{}, [](const std::vector<NodePtr>& children) {
         (void)children;
         fprintf(stderr, "[ERROR] Undefined function name.\n");
         return NAN;
@@ -149,5 +153,41 @@ Complex SciCalc::evaluate_comb_node(const std::vector<NodePtr>& children) {
 Complex SciCalc::evaluate_log_node(const std::vector<NodePtr>& children) {
     if (children.size() != 2) return NAN;
     return log(evaluate_node(children[1])) / log(evaluate_node(children[0]));
+}
+Complex SciCalc::evaluate_defunc_node(const std::vector<NodePtr> &children) {
+    if (children.size() < 3) return NAN;
+    int func_id = children[0]->id;
+    int vars_num = (int)children.size() - 2;
+    std::vector<int> var_id;
+    for (int i = 0; i < vars_num; i++) {
+        var_id.push_back(children[1 + i]->id);
+    }
+    m_original_functions[func_id] = OriginalFunc(m_memory[func_id].name, var_id, children.back());
+    return Complex(0.0);
+}
+Complex SciCalc::evaluate_cfunc_node(const std::vector<NodePtr> &children) {
+    if (children.size() < 2) return NAN;
+    int func_id = children[0]->id;
+
+    auto f = m_original_functions.find(func_id);
+    if (f == m_original_functions.end()) return NAN;
+
+    if (f->second.var_id.size() != children.size() - 1) return NAN;
+    std::vector<Complex> memory;
+    for (int i = 0; i < f->second.var_id.size(); i++) {
+        memory.push_back(m_memory[f->second.var_id[i]].value);
+        m_memory[f->second.var_id[i]].value = evaluate_node(children[1 + i]);
+    }
+    Complex ans = evaluate_node(f->second.content);
+    for (int i = 0; i < f->second.var_id.size(); i++) {
+        m_memory[f->second.var_id[i]].value = memory[i];
+    }
+
+    return ans;
+}
+Complex SciCalc::evaluate_abs_node(const std::vector<NodePtr> &children) {
+    if (children.size() != 1) return NAN;
+    Complex eval = evaluate_node(children[0]);
+    return sqrt(eval.real() * eval.real() + eval.imag() * eval.imag());
 }
 }  // namespace sci_calc

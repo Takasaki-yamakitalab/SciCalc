@@ -182,18 +182,36 @@ int SciCalc::parse_special_func_args(std::string& func, NodePtr& node) {
     node->id = detect_special_func(func);
     rm_special_func_name(func);
     std::vector<std::string> args = get_special_func_args(func);
-    if (args.size() != m_special_functions[node->id].arg_num) {
+    if (m_special_functions[node->id].arg_num >= 0 && args.size() != m_special_functions[node->id].arg_num) {
         // the number of arguments is wrong
         node->type = ND_NUM;
         node->value = 0.0;
         node->children.clear();
         return -1;
     }
-    if (m_special_functions[node->id].name == "\\sum" ||
-        m_special_functions[node->id].name == "\\prod" ||
-        m_special_functions[node->id].name == "\\int" ||
-        m_special_functions[node->id].name == "\\diff") {
-        list_var_id(get_memory_id(args[1]));
+    if (!m_special_functions[node->id].var_index.empty()) {
+        if (m_special_functions[node->id].var_index[0] == -1) {
+            std::vector<int> ignore(m_special_functions[node->id].var_index.begin() + 1, m_special_functions[node->id].var_index.end());
+            for (auto& ign : ignore) {
+                if (ign < 0) ign += (int)args.size();
+            }
+            for (int i = 0; i < (int)args.size(); i++) {
+                bool contFlg = false;
+                for (auto& ign : ignore) {
+                    if (i == ign) {
+                        contFlg = true;
+                        break;
+                    }
+                }
+                if (contFlg) continue;
+                list_var_id(get_memory_id(args[i]));
+            }
+        }
+        else {
+            for (int i : m_special_functions[node->id].var_index) {
+                list_var_id(get_memory_id(args[i]));
+            }
+        }
     }
     for (int i = 0; i < args.size(); i++) {
         node->children.push_back(parse(args[i]));

@@ -2,6 +2,7 @@
 #define SCI_CALC_DEFINE_HPP
 
 #include <stdio.h>
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -31,12 +32,14 @@ constexpr uint32_t OPTIMIZER_DEFAULT = OPTIMIZER_CONST_FOLDING + OPTIMIZER_CONST
 using Real = double;
 using Complex = std::complex<Real>;
 
+struct Node;
+using NodePtr = std::unique_ptr<Node>;
 struct Node {
     size_t hash;
     NODE_TYPE type = ND_NUM;
     int id = 0;
     Complex value = 0.0;
-    std::vector<std::unique_ptr<Node>> children;
+    std::vector<NodePtr> children;
     Node();
     Node(const Node& other);
     Node(Complex val);
@@ -44,7 +47,6 @@ struct Node {
     Node(Node&&) noexcept = default;
     Node& operator=(Node&&) noexcept = default;
 };
-using NodePtr = std::unique_ptr<Node>;
 
 struct Memory {
     std::string name;
@@ -60,9 +62,26 @@ struct MathFunc {
 
 struct SpecialFunc {
     std::string name;
-    int arg_num;
+    int arg_num;    // -1 for variable-length arguments
+
+    // The argument indicated by var_index is treated as a variable
+    // and will not be folded during the optimization.
+    // However, if var_index[0] is -1, then any argument not included
+    // in var_index is treated as a variable.
+    // For example, if you wish to treat all arguments except the
+    // first (index 0) and the last as variables, you would set
+    // `var_index = {-1, 0, -1}`.
+    std::vector<int> var_index;
     std::function<std::complex<double>(const std::vector<NodePtr>&)> calc;
-    SpecialFunc(std::string name, int argc, std::function<Complex(const std::vector<NodePtr>&)> f);
+    SpecialFunc(std::string name, int argc, const std::vector<int>& index, std::function<Complex(const std::vector<NodePtr>&)> f);
+};
+
+struct OriginalFunc {
+    std::string name = "";
+    std::vector<int> var_id = {};
+    NodePtr content = nullptr;
+    OriginalFunc() = default;
+    OriginalFunc(const std::string& name, const std::vector<int>& var_id, const NodePtr& node);
 };
 
 }  // namespace sci_calc
