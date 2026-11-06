@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include <Polynomial/polynomial.hpp>
-#include "sci_calc_define.hpp"
+#include "./sci_calc_define.hpp"
 
 namespace sci_calc {
 
@@ -17,6 +17,12 @@ int write_csv(const std::string& fname, const std::vector<std::vector<std::strin
 // sci_calc_tools.cpp
 int64_t get_raw(double x);
 double raw2double(int64_t raw);
+void saveNode(std::ostream& os, const Node& node);
+NodePtr loadNode(std::istream& is);
+void saveOriginalFunctions(const std::unordered_map<int, OriginalFunc>& func, const std::string& path);
+void saveOriginalFunc(std::ostream& os, const OriginalFunc& func);
+std::unordered_map<int, OriginalFunc> loadOriginalFunctions(const std::string& path);
+OriginalFunc loadOriginalFunc(std::istream& is);
 
 class SciCalc {
    private:
@@ -69,7 +75,7 @@ class SciCalc {
     std::string rm_brackets(std::string& src);
     std::string split_by_ope(std::string& formula, const char ope);
     std::string split_by_ope(std::string& formula, const char* ope);
-    size_t node_hash(const Node* node);
+    static size_t node_hash(const Node* node);
     NodePtr parse(std::string& formula);
     int parse_special_func_args(std::string& func, NodePtr& node);
     int parse_numbers(std::string& formula, NodePtr& node);
@@ -115,6 +121,7 @@ class SciCalc {
     // sci_calc_special_functions.cpp
     int set_integral_N(int N = DEFAULT_INTEGRAL_N);
     int set_special_func_list();
+    int load_saved_original_func();
     int add_special_func_to_list(const SpecialFunc& func);
     int detect_special_func(const std::string& func);
     std::string rm_special_func_name(std::string& func);

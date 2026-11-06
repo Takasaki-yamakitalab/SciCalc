@@ -29,6 +29,7 @@ int SciCalc::save_memory() {
         dat.push_back({ mem.name, std::to_string(get_raw(mem.value.real())), std::to_string(get_raw(mem.value.imag())) });
     }
     write_csv(".scicalcmem", dat);
+    saveOriginalFunctions(m_original_functions, "./.origfunc");
     return 0;
 }
 int SciCalc::reset_memory() {

@@ -20,6 +20,7 @@ int SciCalc::init() {
     this->set_memory();
     this->set_math_func_list();
     this->set_special_func_list();
+    this->load_saved_original_func();
     return 0;
 }
 SciCalc::~SciCalc() {
