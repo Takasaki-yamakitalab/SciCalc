@@ -14,7 +14,7 @@ int SciCalc::set_special_func_list() {
     // all special function names begin with '\\'
     // the content of var_id represents the index within the '{}' structure used to store variables.
     m_special_functions.emplace_back("\\defunc", -1, std::vector<int>{ -1, 0, -1 }, [&](const std::vector<NodePtr>& children) { return evaluate_defunc_node(children); });
-    m_special_functions.emplace_back("\\cfunc", -1, std::vector<int>{ -1, 0 }, [&](const std::vector<NodePtr>& children) { return evaluate_cfunc_node(children); });
+    m_special_functions.emplace_back("\\cfunc", -1, std::vector<int>{}, [&](const std::vector<NodePtr>& children) { return evaluate_cfunc_node(children); });
     m_special_functions.emplace_back("\\prod", 4, std::vector<int>{ 1 }, [&](const std::vector<NodePtr>& children) { return evaluate_prod_node(children); });
     m_special_functions.emplace_back("\\diff", 3, std::vector<int>{ 1 }, [&](const std::vector<NodePtr>& children) { return evaluate_diff_node(children); });
     m_special_functions.emplace_back("\\perm", 2, std::vector<int>{}, [&](const std::vector<NodePtr>& children) { return evaluate_perm_node(children); });

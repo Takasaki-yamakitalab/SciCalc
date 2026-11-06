@@ -5,8 +5,8 @@ namespace sci_calc {
 int SciCalc::set_memory() {
     auto dat = read_csv(".scicalcmem");
     for (auto& mem : dat) {
-        if (mem.size() == 2) assign_memory(mem[0], std::stod(mem[1]));
-        if (mem.size() == 3) assign_memory(mem[0], { std::stod(mem[1]), std::stod(mem[2]) });
+        if (mem.size() == 2) assign_memory(mem[0], raw2double(std::stoll(mem[1])));
+        if (mem.size() == 3) assign_memory(mem[0], { raw2double(std::stoll(mem[1])), raw2double(std::stoll(mem[2])) });
     }
     assign_memory("ans", 0.0);
     assign_memory("preans", 0.0);
@@ -26,7 +26,7 @@ int SciCalc::save_memory() {
 #endif
     std::vector<std::vector<std::string>> dat;
     for (auto& mem : m_memory) {
-        dat.push_back({mem.name, std::to_string(mem.value.real()), std::to_string(mem.value.imag())});
+        dat.push_back({ mem.name, std::to_string(get_raw(mem.value.real())), std::to_string(get_raw(mem.value.imag())) });
     }
     write_csv(".scicalcmem", dat);
     return 0;

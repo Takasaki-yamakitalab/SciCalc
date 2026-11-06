@@ -22,6 +22,7 @@ set(SRC
     src/sci_calc_special_functions.cpp
     src/sci_calc_expand.cpp
     src/sci_calc_to_string.cpp
+    src/sci_calc_tools.cpp
     src/sci_calc_sort.cpp
     src/sci_calc_define.cpp
     src/sci_calc_polynomial.cpp

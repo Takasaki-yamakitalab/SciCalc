@@ -14,6 +14,10 @@ namespace sci_calc {
 std::vector<std::vector<std::string>> read_csv(const std::string& fname);
 int write_csv(const std::string& fname, const std::vector<std::vector<std::string>>& dat);
 
+// sci_calc_tools.cpp
+int64_t get_raw(double x);
+double raw2double(int64_t raw);
+
 class SciCalc {
    private:
     // list of the variables (memory)
