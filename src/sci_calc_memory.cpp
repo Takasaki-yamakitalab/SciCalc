@@ -14,16 +14,7 @@ int SciCalc::set_memory(const std::string& path) {
             std::cerr << "[ERROR] " << e.what() << std::endl;
         }
     }
-    assign_memory("ans", 0.0);
-    assign_memory("preans", 0.0);
-    assign_memory("~pi", std::atan(1.0) * 4.0);
-    assign_memory("e", std::exp(1.0));
-    assign_memory("g", 9.80665);
-    assign_memory("R", 8.31446261815324);
-    assign_memory("c", 299792458);
-    assign_memory("G", 6.67430e-11);
-    assign_memory("h", 6.62607015e-34);
-    assign_memory("i", {0, 1.0});
+    reset_default_mems();
     return 0;
 }
 int SciCalc::save_memory(const std::string& path) {
@@ -57,7 +48,7 @@ int SciCalc::save_memory(const std::string& path) {
     }
     return 0;
 }
-int SciCalc::reset_memory() {
+int SciCalc::reset_default_mems() {
     assign_memory("ans", 0.0);
     assign_memory("preans", 0.0);
     assign_memory("~pi", std::atan(1.0) * 4.0);

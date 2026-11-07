@@ -115,7 +115,7 @@ class SciCalc {
     // sci_calc_memory.cpp
     int set_memory(const std::string& path);
     int save_memory(const std::string& path);
-    int reset_memory();
+    int reset_default_mems();
     int get_memory_id(const std::string& name);
     Complex get_memory(const std::string& name);
     Complex assign_memory(const std::string& name, Complex val);
