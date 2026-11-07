@@ -69,6 +69,7 @@ class SciCalc {
     SciCalc(int N, bool debug, const std::string& path);
     ~SciCalc();
     int init();
+    int set_path(const std::string& path);
     std::string rm_spaces(const std::string& src);
     Complex calc(const std::string& formula);
     std::string expand(const std::string& formula);
@@ -113,6 +114,8 @@ class SciCalc {
     int combination(int n, int r);
 
     // sci_calc_memory.cpp
+    int set_memory();
+    int save_memory();
     int set_memory(const std::string& path);
     int save_memory(const std::string& path);
     int reset_default_mems();

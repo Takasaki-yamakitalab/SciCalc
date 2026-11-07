@@ -4,6 +4,12 @@
 #include <fstream>
 
 namespace sci_calc {
+int SciCalc::set_memory() {
+    return set_memory(m_path);
+}
+int SciCalc::save_memory() {
+    return save_memory(m_path);
+}
 int SciCalc::set_memory(const std::string& path) {
     std::ifstream ifs(path, std::ios::binary);
     if (ifs.is_open()) {
@@ -14,7 +20,6 @@ int SciCalc::set_memory(const std::string& path) {
             std::cerr << "[ERROR] " << e.what() << std::endl;
         }
     }
-    reset_default_mems();
     return 0;
 }
 int SciCalc::save_memory(const std::string& path) {
@@ -42,6 +47,7 @@ int SciCalc::save_memory(const std::string& path) {
         try {
             saveMemories(ofs, m_memory);
             saveOriginalFunctions(ofs, m_original_functions);
+            std::cerr << "saved!" << std::endl;
         } catch (const std::exception& e) {
             std::cerr << "[ERROR] " << e.what() << std::endl;
         }

@@ -26,8 +26,14 @@ SciCalc::SciCalc(int N, bool debug, const std::string& path) : is_debug(debug), 
 int SciCalc::init() {
     this->m_var_id_stack.clear();
     this->set_memory(m_path);
+    this->reset_default_mems();
     this->set_math_func_list();
     this->set_special_func_list();
+    return 0;
+}
+int SciCalc::set_path(const std::string& path) {
+    this->m_path = path;
+    this->set_memory(m_path);
     return 0;
 }
 SciCalc::~SciCalc() {
