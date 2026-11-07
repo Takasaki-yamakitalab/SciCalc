@@ -29,6 +29,7 @@ int SciCalc::set_math_func_list() {
     this->m_functions.emplace_back("@tan",      [&](Complex x) { return ignore_eps(tan(x)); });
     this->m_functions.emplace_back("@log",      [](Complex x) { return log10(x); });
     this->m_functions.emplace_back("@exp",      [](Complex x) { return exp(x); });
+    this->m_functions.emplace_back("@abs",      [](Complex x) { return sqrt(x.real() * x.real() + x.imag() * x.imag()); });
     this->m_functions.emplace_back("@ln",       [](Complex x) { return log(x); });
 
     // error
