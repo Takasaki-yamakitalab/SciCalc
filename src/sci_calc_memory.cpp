@@ -55,9 +55,6 @@ int SciCalc::save_memory(const std::string& path) {
             std::cerr << "[ERROR] " << e.what() << std::endl;
         }
     }
-    else {
-        std::cerr << "ERROR! (save_memory) cannot open the file \'" << path << "\'!" << std::endl;
-    }
     return 0;
 }
 int SciCalc::reset_memory() {
