@@ -1,12 +1,18 @@
 #include "SciCalc/sci_calc.hpp"
 #include <algorithm>
+#include <exception>
+#include <fstream>
 
 namespace sci_calc {
-int SciCalc::set_memory() {
-    auto dat = read_csv(".scicalcmem");
-    for (auto& mem : dat) {
-        if (mem.size() == 2) assign_memory(mem[0], raw2double(std::stoll(mem[1])));
-        if (mem.size() == 3) assign_memory(mem[0], { raw2double(std::stoll(mem[1])), raw2double(std::stoll(mem[2])) });
+int SciCalc::set_memory(const std::string& path) {
+    std::ifstream ifs(path, std::ios::binary);
+    if (ifs.is_open()) {
+        try {
+            m_memory = loadMemories(ifs);
+            m_original_functions = loadOriginalFunctions(ifs);
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] " << e.what() << std::endl;
+        }
     }
     assign_memory("ans", 0.0);
     assign_memory("preans", 0.0);
@@ -20,16 +26,38 @@ int SciCalc::set_memory() {
     assign_memory("i", {0, 1.0});
     return 0;
 }
-int SciCalc::save_memory() {
-#ifdef __ANDROID__
-    return 0;
-#endif
-    std::vector<std::vector<std::string>> dat;
-    for (auto& mem : m_memory) {
-        dat.push_back({ mem.name, std::to_string(get_raw(mem.value.real())), std::to_string(get_raw(mem.value.imag())) });
+int SciCalc::save_memory(const std::string& path) {
+
+    if (is_debug) {
+        std::vector<std::vector<std::string>> dat;
+        for (auto& mem : m_memory) {
+            dat.push_back({mem.name, std::to_string(mem.value.real()), std::to_string(mem.value.imag())});
+        }
+        write_csv("mems.csv", dat);
     }
-    write_csv(".scicalcmem", dat);
-    saveOriginalFunctions(m_original_functions, "./.origfunc");
+
+    formatMemories(m_memory);
+
+    if (is_debug) {
+        std::vector<std::vector<std::string>> dat;
+        for (auto& mem : m_memory) {
+            dat.push_back({mem.name, std::to_string(mem.value.real()), std::to_string(mem.value.imag())});
+        }
+        write_csv("formated_mems.csv", dat);
+    }
+
+    std::ofstream ofs(path, std::ios::binary);
+    if (ofs.is_open()) {
+        try {
+            saveMemories(ofs, m_memory);
+            saveOriginalFunctions(ofs, m_original_functions);
+        } catch (const std::exception& e) {
+            std::cerr << "[ERROR] " << e.what() << std::endl;
+        }
+    }
+    else {
+        std::cerr << "ERROR! (save_memory) cannot open the file \'" << path << "\'!" << std::endl;
+    }
     return 0;
 }
 int SciCalc::reset_memory() {
@@ -43,7 +71,6 @@ int SciCalc::reset_memory() {
     assign_memory("G", 6.67430e-11);
     assign_memory("h", 6.62607015e-34);
     assign_memory("i", {0, 1.0});
-    save_memory();
     return 0;
 }
 

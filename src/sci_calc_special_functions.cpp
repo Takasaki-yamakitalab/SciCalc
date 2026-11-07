@@ -32,10 +32,6 @@ int SciCalc::set_special_func_list() {
     });
     return 0;
 }
-int SciCalc::load_saved_original_func() {
-    m_original_functions = loadOriginalFunctions("./.origfunc");
-    return 0;
-}
 int SciCalc::add_special_func_to_list(const SpecialFunc& func) {
     for (int i = 0; i <= m_special_functions.size(); i++) {
         if (func.name.size() < m_special_functions[i].name.size()) {

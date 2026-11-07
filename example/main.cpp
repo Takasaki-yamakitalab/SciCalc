@@ -3,7 +3,7 @@
 #include "../include/SciCalc/sci_calc.hpp"
 
 int main(void) {
-    sci_calc::SciCalc calculator;
+    sci_calc::SciCalc calculator("./.scicalcmem");
     std::string buff;
     while (1) {
         std::cout << "input formula (or type 'exit' or 'end' to exit).:" << std::endl;

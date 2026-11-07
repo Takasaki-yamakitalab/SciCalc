@@ -19,13 +19,22 @@ int64_t get_raw(double x);
 double raw2double(int64_t raw);
 void saveNode(std::ostream& os, const Node& node);
 NodePtr loadNode(std::istream& is);
-void saveOriginalFunctions(const std::unordered_map<int, OriginalFunc>& func, const std::string& path);
+void saveOriginalFunctions(std::ostream& os, const std::unordered_map<int, OriginalFunc>& func);
 void saveOriginalFunc(std::ostream& os, const OriginalFunc& func);
-std::unordered_map<int, OriginalFunc> loadOriginalFunctions(const std::string& path);
+std::unordered_map<int, OriginalFunc> loadOriginalFunctions(std::istream& is);
 OriginalFunc loadOriginalFunc(std::istream& is);
+void saveMemory(std::ostream& os, const Memory& mem);
+void saveMemories(std::ostream& os, const std::vector<Memory>& mems);
+Memory loadMemory(std::istream& is);
+std::vector<Memory> loadMemories(std::istream& is);
+void formatMemories(std::vector<Memory>& mems);
 
 class SciCalc {
    private:
+    bool is_debug;
+    int m_integral_N = DEFAULT_INTEGRAL_N;
+    std::string m_path;
+
     // list of the variables (memory)
     std::vector<Memory> m_memory;
 
@@ -41,11 +50,6 @@ class SciCalc {
     // key: function's id (index within m_memory)
     std::unordered_map<int, OriginalFunc> m_original_functions;
 
-    bool is_debug;
-
-    // number of divisions in numerical integration
-    int m_integral_N = DEFAULT_INTEGRAL_N;
-
     // list of variables that are treated as "variables"
     // variables not registered in this list will be expanded to constants
     std::vector<int> m_var_id_stack;
@@ -59,9 +63,10 @@ class SciCalc {
    public:
     // sci_calc.cpp
     SciCalc();
-    SciCalc(int N);
-    SciCalc(bool debug);
-    SciCalc(int N, bool debug);
+    SciCalc(const std::string& path);
+    SciCalc(int N, const std::string& path);
+    SciCalc(bool debug, const std::string& path);
+    SciCalc(int N, bool debug, const std::string& path);
     ~SciCalc();
     int init();
     std::string rm_spaces(const std::string& src);
@@ -108,8 +113,8 @@ class SciCalc {
     int combination(int n, int r);
 
     // sci_calc_memory.cpp
-    int set_memory();
-    int save_memory();
+    int set_memory(const std::string& path);
+    int save_memory(const std::string& path);
     int reset_memory();
     int get_memory_id(const std::string& name);
     Complex get_memory(const std::string& name);
@@ -121,7 +126,6 @@ class SciCalc {
     // sci_calc_special_functions.cpp
     int set_integral_N(int N = DEFAULT_INTEGRAL_N);
     int set_special_func_list();
-    int load_saved_original_func();
     int add_special_func_to_list(const SpecialFunc& func);
     int detect_special_func(const std::string& func);
     std::string rm_special_func_name(std::string& func);

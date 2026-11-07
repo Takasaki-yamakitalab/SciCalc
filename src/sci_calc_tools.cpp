@@ -1,8 +1,9 @@
 #include <stdexcept>
-#include <fstream>
 #include "SciCalc/sci_calc.hpp"
 #include "SciCalc/sci_calc_binary.hpp"
 #include "SciCalc/sci_calc_define.hpp"
+#include <iostream>
+#include <string>
 
 namespace sci_calc {
 int64_t get_raw(double x) {
@@ -50,21 +51,19 @@ NodePtr loadNode(std::istream& is) {
     return node;
 }
 
-void saveOriginalFunctions(const std::unordered_map<int, OriginalFunc>& functions, const std::string& path) {
-    std::ofstream ofs(path, std::ios::binary);
-    if (!ofs) throw std::runtime_error("Cannot open file");
+void saveOriginalFunctions(std::ostream& os, const std::unordered_map<int, OriginalFunc>& functions) {
     constexpr uint32_t MAGIC = 0x41535442;  // ASTB
     constexpr uint32_t VERSION = 1;
 
-    writeBinary(ofs, MAGIC);
-    writeBinary(ofs, VERSION);
+    writeBinary(os, MAGIC);
+    writeBinary(os, VERSION);
 
     const size_t FUNC_SIZE = functions.size();
-    writeBinary(ofs, FUNC_SIZE);
+    writeBinary(os, FUNC_SIZE);
 
     for (auto& func : functions) {
-        writeBinary(ofs, func.first);
-        saveOriginalFunc(ofs, func.second);
+        writeBinary(os, func.first);
+        saveOriginalFunc(os, func.second);
     }
 }
 
@@ -86,25 +85,22 @@ void saveOriginalFunc(std::ostream& os, const OriginalFunc& func) {
     saveNode(os, *func.content);
 }
 
-std::unordered_map<int, OriginalFunc> loadOriginalFunctions(const std::string& path) {
-    std::ifstream ifs(path, std::ios::binary);
-    if (!ifs.is_open()) return {};
+std::unordered_map<int, OriginalFunc> loadOriginalFunctions(std::istream& is) {
     uint32_t magic, version;
-
-    readBinary(ifs, magic);
-    readBinary(ifs, version);
+    readBinary(is, magic);
+    readBinary(is, version);
     if (magic != 0x41535442) throw std::runtime_error("invalid AST file");
     if (version != 1) throw std::runtime_error("Unsupported AST version");
 
     size_t func_size;
-    readBinary(ifs, func_size);
+    readBinary(is, func_size);
     if (func_size > 1000000) throw std::runtime_error("Too many functions");
 
     std::unordered_map<int, OriginalFunc> ret;
     for (size_t i = 0; i < func_size; i++) {
         int id;
-        readBinary(ifs, id);
-        ret[id] = loadOriginalFunc(ifs);
+        readBinary(is, id);
+        ret[id] = loadOriginalFunc(is);
     }
     return ret;
 }
@@ -112,7 +108,7 @@ std::unordered_map<int, OriginalFunc> loadOriginalFunctions(const std::string& p
 OriginalFunc loadOriginalFunc(std::istream &is) {
     size_t name_size;
     readBinary(is, name_size);
-    if (name_size > 1000000) throw std::runtime_error("Too long name");
+    if (name_size > 1000000) throw std::runtime_error("Too long name (" + std::to_string(name_size) + ")");
     std::string name;
     for (size_t i = 0; i < name_size; i++) {
         char c;
@@ -131,5 +127,84 @@ OriginalFunc loadOriginalFunc(std::istream &is) {
     }
 
     return OriginalFunc(name, var_id, loadNode(is));
+}
+
+void saveMemory(std::ostream& os, const Memory& mem) {
+    const size_t NAME_SIZE = mem.name.size();
+    writeBinary(os, NAME_SIZE);
+    for (const char& c : mem.name) {
+        writeBinary(os, c);
+    }
+    writeBinary(os, mem.value.real());
+    writeBinary(os, mem.value.imag());
+}
+
+void saveMemories(std::ostream& os, const std::vector<Memory>& mems) {
+    constexpr uint32_t MAGIC = 0x4D454D42;  // MEMB
+    constexpr uint32_t VERSION = 1;
+    writeBinary(os, MAGIC);
+    writeBinary(os, VERSION);
+
+    const size_t NUM_MEMORIES = mems.size();
+    if (NUM_MEMORIES > 1000000) throw std::runtime_error("Too many memories");
+    writeBinary(os, NUM_MEMORIES);
+    for (auto& m : mems) {
+        saveMemory(os, m);
+    }
+}
+
+Memory loadMemory(std::istream& is) {
+    size_t name_size;
+    readBinary(is, name_size);
+    if (name_size > 1000000) throw std::runtime_error("Too long name (" + std::to_string(name_size) + ")");
+    std::string name;
+    for (size_t i = 0; i < name_size; i++) {
+        char c;
+        readBinary(is, c);
+        name += c;
+    }
+
+    double real, imag;
+    readBinary(is, real);
+    readBinary(is, imag);
+
+    return Memory(name, {real, imag});
+}
+
+std::vector<Memory> loadMemories(std::istream& is) {
+    uint32_t magic, version;
+    readBinary(is, magic);
+    readBinary(is, version);
+    if (magic != 0x4D454D42) throw std::runtime_error("invalid MEM file");
+    if (version != 1) throw std::runtime_error("Unsupported MEM version");
+
+    size_t num_memories;
+    readBinary(is, num_memories);
+    if (num_memories > 1000000) throw std::runtime_error("Too many memories");
+    std::vector<Memory> ret;
+    for (size_t i = 0; i < num_memories; i++) {
+        ret.push_back(loadMemory(is));
+    }
+    return ret;
+}
+
+void formatMemories(std::vector<Memory>& mems) {
+    for (auto it = mems.begin(); it != mems.end(); ) {
+        if ('0' <= it->name[0] && it->name[0] <= '9') {
+            it = mems.erase(it);
+            continue;
+        }
+        bool del = false;
+        for (const char& c : it->name) {
+            if ('a' <= c && c <= 'z' ||
+                'A' <= c && c <= 'Z' ||
+                '0' <= c && c <= '9' ||
+                c == '_' || c == '~') continue;
+            del = true;
+            break;
+        }
+        if (del) it = mems.erase(it);
+        else it++;
+    }
 }
 }

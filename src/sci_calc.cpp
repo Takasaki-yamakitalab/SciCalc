@@ -4,27 +4,34 @@
 
 namespace sci_calc {
 SciCalc::SciCalc() : is_debug(false) {
+    m_path = "";
     init();
 }
-SciCalc::SciCalc(int N) : is_debug(false), m_integral_N(N) {
+SciCalc::SciCalc(const std::string& path) : is_debug(false) {
+    m_path = path;
     init();
 }
-SciCalc::SciCalc(bool debug) : is_debug(debug) {
+SciCalc::SciCalc(int N, const std::string& path) : is_debug(false), m_integral_N(N) {
+    m_path = path;
     init();
 }
-SciCalc::SciCalc(int N, bool debug) : is_debug(debug), m_integral_N(N) {
+SciCalc::SciCalc(bool debug, const std::string& path) : is_debug(debug) {
+    m_path = path;
+    init();
+}
+SciCalc::SciCalc(int N, bool debug, const std::string& path) : is_debug(debug), m_integral_N(N) {
+    m_path = path;
     init();
 }
 int SciCalc::init() {
     this->m_var_id_stack.clear();
-    this->set_memory();
+    this->set_memory(m_path);
     this->set_math_func_list();
     this->set_special_func_list();
-    this->load_saved_original_func();
     return 0;
 }
 SciCalc::~SciCalc() {
-    save_memory();
+    save_memory(m_path);
 }
 
 std::string SciCalc::rm_spaces(const std::string& src) {
