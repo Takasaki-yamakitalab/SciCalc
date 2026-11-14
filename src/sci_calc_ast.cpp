@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cmath>
 #include "SciCalc/sci_calc.hpp"
+#include "SciCalc/sci_calc_define.hpp"
 
 namespace sci_calc {
 int SciCalc::is_bracket(char c) {
@@ -114,6 +115,16 @@ NodePtr SciCalc::parse(std::string& left) {
         node->type = ND_ASSIGN;
         node->children.push_back(parse(right));
         node->children.push_back(parse(left));
+        node->hash = node_hash(node.get());
+        return node;
+    }
+
+    if ((right = split_by_ope(left, "?")).size() != 0) {
+        node->type = ND_IFELSE;
+        node->children.push_back(parse(left));
+        std::string rr = split_by_ope(right, ":");
+        node->children.push_back(parse(right));
+        if (rr.size() != 0) node->children.push_back(parse(rr));
         node->hash = node_hash(node.get());
         return node;
     }
@@ -269,7 +280,24 @@ Complex SciCalc::evaluate_node(const NodePtr& node) {
         return m_memory[node->children[0]->id].value =
                    evaluate_node(node->children[1]);
     }
+    if (node->type == ND_IFELSE) {
+        if (evaluate_node(node->children[0]) != 0.0) return evaluate_node(node->children[1]);
+        else if (node->children.size() == 3) return evaluate_node(node->children[2]);
+        else return 0.0;
+    }
     if (node->type == ND_OPE) {
+        if (node->id == OP_EQ)
+            return evaluate_node(node->children[0]) == evaluate_node(node->children[1]) ? 1.0 : 0.0;
+        if (node->id == OP_NEQ)
+            return evaluate_node(node->children[0]) != evaluate_node(node->children[1]) ? 1.0 : 0.0;
+        if (node->id == OP_GT)
+            return evaluate_node(node->children[0]).real() > evaluate_node(node->children[1]).real() ? 1.0 : 0.0;
+        if (node->id == OP_LT)
+            return evaluate_node(node->children[0]).real() < evaluate_node(node->children[1]).real() ? 1.0 : 0.0;
+        if (node->id == OP_GEQ)
+            return evaluate_node(node->children[0]).real() >= evaluate_node(node->children[1]).real() ? 1.0 : 0.0;
+        if (node->id == OP_LEQ)
+            return evaluate_node(node->children[0]).real() <= evaluate_node(node->children[1]).real() ? 1.0 : 0.0;
         if (node->id == OP_ADD)
             return evaluate_node(node->children[0]) +
                    evaluate_node(node->children[1]);

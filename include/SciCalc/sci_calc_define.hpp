@@ -12,10 +12,10 @@
 #include <cassert>
 
 namespace sci_calc {
-enum OPE_TYPE { OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_POW, OP_END };
-enum NODE_TYPE { ND_NUM, ND_OPE, ND_VAR, ND_MATH_FUNC, ND_SPECIAL_FUNC, ND_ASSIGN, ND_END };
+enum OPE_TYPE { OP_NEQ, OP_GEQ, OP_LEQ, OP_EQ, OP_GT, OP_LT, OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_POW, OP_END };
+enum NODE_TYPE { ND_NUM, ND_OPE, ND_VAR, ND_MATH_FUNC, ND_SPECIAL_FUNC, ND_ASSIGN, ND_IFELSE, ND_END };
 
-const char OP_LIST[OP_END][2] = {"+", "-", "*", "/", "^"};
+const char OP_LIST[OP_END][3] = {"!=", ">=", "<=", "=", ">", "<", "+", "-", "*", "/", "^"};
 constexpr int DEFAULT_INTEGRAL_N = 0x100000;
 
 constexpr uint32_t OPTIMIZER_NONE = 0;

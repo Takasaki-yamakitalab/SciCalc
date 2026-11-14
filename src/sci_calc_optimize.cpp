@@ -75,6 +75,12 @@ int SciCalc::optimizer_const_folding(NodePtr& node) {
         Complex left = node->children[0]->value;
         Complex right = node->children[1]->value;
         node->type = ND_NUM;
+        if (node->id == OP_EQ) node->value = (left == right) ? 1.0 : 0.0;
+        if (node->id == OP_NEQ) node->value = (left != right) ? 1.0 : 0.0;
+        if (node->id == OP_GT) node->value = (left.real() > right.real()) ? 1.0 : 0.0;
+        if (node->id == OP_LT) node->value = (left.real() < right.real()) ? 1.0 : 0.0;
+        if (node->id == OP_GEQ) node->value = (left.real() >= right.real()) ? 1.0 : 0.0;
+        if (node->id == OP_LEQ) node->value = (left.real() <= right.real()) ? 1.0 : 0.0;
         if (node->id == OP_ADD) node->value = left + right;
         if (node->id == OP_SUB) node->value = left - right;
         if (node->id == OP_MUL) node->value = left * right;
