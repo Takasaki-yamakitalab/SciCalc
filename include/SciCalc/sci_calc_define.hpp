@@ -32,6 +32,10 @@ constexpr uint32_t OPTIMIZER_DEFAULT = OPTIMIZER_CONST_FOLDING + OPTIMIZER_CONST
 using Real = double;
 using Complex = std::complex<Real>;
 
+struct ComplexHash {
+    size_t operator()(const Complex& p) const { return std::hash<double>()(p.real()) ^ (std::hash<double>()(p.imag())); }
+};
+
 struct Node;
 using NodePtr = std::unique_ptr<Node>;
 struct Node {
