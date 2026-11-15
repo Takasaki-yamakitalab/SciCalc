@@ -183,6 +183,12 @@ polynomial::Polynomial<int64_t> SciCalc::expandPoly(NodePtr& node) {
 }
 
 int SciCalc::factorPoly(NodePtr& node) {
+    if (node->type == ND_MATH_FUNC || node->type == ND_SPECIAL_FUNC || node->type == ND_ASSIGN || node->type == ND_IFELSE) {
+        for (auto& arg : node->children) {
+            factorPoly(arg);
+        }
+        return 0;
+    }
     auto f = expandPoly(node);
     auto result = polynomial::factorize(f);
     node = std::make_unique<Node>();
