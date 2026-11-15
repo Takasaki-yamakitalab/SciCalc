@@ -90,8 +90,8 @@ std::string SciCalc::rm_spaces(const std::string& src) {
 Complex SciCalc::calc(const std::string& formula) {
     m_var_id_stack.clear();
     std::string buff = rm_spaces(formula);
-    this->ast_cash = parse(buff);
-    Complex ans = evaluate_node(this->ast_cash);
+    this->ast_cache = parse(buff);
+    Complex ans = evaluate_node(this->ast_cache);
     assign_memory("preans", get_memory("ans"));
     assign_memory("ans", ans);
     return ans;
@@ -104,14 +104,9 @@ std::string SciCalc::expand(const std::string& formula) {
     m_optimizer &= ~OPTIMIZER_COMBINE_LIKE_TERMS;
     this->list_all_var = true;
     std::string buff = rm_spaces(formula);
-    this->ast_cash = parse(buff);
-    NodePtr ans = std::make_unique<Node>(*this->ast_cash);
+    this->ast_cache = parse(buff);
+    NodePtr ans = std::make_unique<Node>(*this->ast_cache);
 
-    // NodePtr ans_pre;
-    // do {
-    //     ans_pre = std::make_unique<Node>(*ans);
-    //     expand(ans);
-    // } while (!is_equal(ans.get(), ans_pre.get()));
     expandPoly(ans);
 
     m_optimizer = opt;
@@ -126,8 +121,8 @@ std::string SciCalc::factorize(const std::string& formula) {
     m_optimizer &= ~OPTIMIZER_COMBINE_LIKE_TERMS;
     this->list_all_var = true;
     std::string buff = rm_spaces(formula);
-    this->ast_cash = parse(buff);
-    NodePtr ans = std::make_unique<Node>(*this->ast_cash);
+    this->ast_cache = parse(buff);
+    NodePtr ans = std::make_unique<Node>(*this->ast_cache);
     factorPoly(ans);
 
     m_optimizer = opt;

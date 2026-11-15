@@ -58,7 +58,7 @@ class SciCalc {
 
     uint32_t m_optimizer = OPTIMIZER_DEFAULT;
 
-    NodePtr ast_cash = NULL;
+    NodePtr ast_cache = NULL;
 
    public:
     // sci_calc.cpp
